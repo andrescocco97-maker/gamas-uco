@@ -673,6 +673,7 @@ details.cvd .cvlist{padding:0 8px 8px;margin-top:0}details.cvd .cvc{background:v
 .pres2{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:6px 8px;margin-top:10px;font-size:.9rem;color:var(--dim)}.pres2>span{grid-column:1/-1;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}.pres2 .in{color:var(--fg);min-height:46px;text-align:center;font-size:1.1rem;min-width:0}.pres2 em{font-style:normal}
 .pchk{margin-top:8px;padding:10px 12px;border-radius:var(--r3);background:color-mix(in srgb,var(--bad) 14%,transparent);box-shadow:inset 3px 0 0 var(--bad);display:flex;flex-direction:column;gap:6px;font-size:.88rem}.pchk span{color:var(--dim);font-size:.8rem}.pchkb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pchkb .btn{min-height:44px;margin:0}
 .mres b{font-size:.95rem}
+.disp .in{font-size:3.2rem}.dose .in{font-size:1.9rem}.stp button{min-height:42px}.stp{margin-top:8px!important}
 details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-width:0}
 .csum{font-size:.85rem;font-weight:600;color:var(--dim);white-space:nowrap}.csum.ok{color:var(--ok)}.csum.warn{color:var(--warn)}.csum.bad{color:var(--bad)}
 .cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 14px}
@@ -756,7 +757,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.04', APP_BUILD='v30', QUIET=true;
+const APP_VER='2026.11.04', APP_BUILD='v31', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
