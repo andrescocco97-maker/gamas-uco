@@ -841,7 +841,7 @@ const DRUGS = [
    'No entra en el VIS original.']},
 
  {id:'iso',g:'Cronotrópico',name:'Isoproterenol',short:'Iso',unit:'mcg/min',num:'mcg',perMin:true,wb:false,
-  amp:{q:0.2,u:'mg',ml:1,label:'amp 0,2 mg / 1 ml'},std:{n:5,vol:100},dils:['Dx5%','SF'],lad:[1,2,3,4,5,6,8,10,12,15,20],
+  amp:{q:1,u:'mg',ml:5,label:'amp 1 mg / 5 ml (0,2 mg/ml)'},std:{n:1,vol:100},dils:['Dx5%','SF'],lad:[1,2,3,4,5,6,8,10,12,15,20],
   via:'Periférica aceptable.',keep:'Cambiar cada 24 h. Proteger de la luz.',
   d:{min:1,umin:2,umax:10,max:20,step:1,start:2},quick:[1,2,5,10,20],
   notes:()=>['Dosis fija: no se calcula por peso. Se titula según la frecuencia cardíaca.','Puente en bradicardia o BAV inestable hasta el marcapasos.','Útil en torsades de pointes dependientes de bradicardia.','Aumenta el consumo de O₂: precaución en isquemia activa.']},
@@ -866,7 +866,7 @@ const DRUGS = [
    'Vida media de unos 9 min: el efecto se va rápido al cortar. Útil para controlar FC cuando hay dudas de tolerancia al betabloqueo.',
    'Evitalo en bajo gasto, shock o BAV.']},
  {id:'labe',g:'Betabloqueantes',name:'Labetalol',short:'Labe',unit:'mg/min',num:'mg',perMin:true,wb:false,
-  amp:{q:100,u:'mg',ml:20,label:'amp 100 mg / 20 ml'},std:{n:4,vol:250},dils:['SF','Dx5%'],lad:[0.5,1,1.5,2],
+  amp:{q:20,u:'mg',ml:4,label:'amp 20 mg / 4 ml'},std:{n:20,vol:250},dils:['SF','Dx5%'],lad:[0.5,1,1.5,2],
   via:'Periférica aceptable.',keep:'Cambiar cada 24 h.',
   d:{min:0.5,umin:0.5,umax:2,max:2,step:0.5,start:0.5},quick:[0.5,1,1.5,2],perDay:true,
   notes:()=>['Bloqueo α1 + β no selectivo. Bolo previo 20 mg en 2 min, repetible.','Dosis acumulada habitual hasta 300 mg.','Contraindicado en asma, BAV, bradicardia o falla cardíaca descompensada.']},
@@ -1505,7 +1505,7 @@ const A={etom:{q:20,u:'mg',ml:10,l:'amp 20 mg/10 ml'},propo:{q:200,u:'mg',ml:20,
  fenta:{q:250,u:'mcg',ml:5,l:'amp 250 mcg/5 ml'},keta:{q:50,u:'mg',ml:1,l:'fco 50 mg/ml',w:['ml del frasco','ml del frasco']},
  amio:{q:150,u:'mg',ml:3,l:'amp 150 mg/3 ml'},aden:{q:6,u:'mg',ml:2,l:'amp 6 mg/2 ml'},vera:{q:5,u:'mg',ml:2,l:'amp 5 mg/2 ml'},
  dilt:{q:25,u:'mg',ml:5,l:'amp 25 mg/5 ml'},meto:{q:5,u:'mg',ml:5,l:'amp 5 mg/5 ml'},esmo:{q:100,u:'mg',ml:10,l:'amp 100 mg/10 ml'},
- digo:{q:0.25,u:'mg',ml:1,l:'amp 0,25 mg/1 ml'},proca:{q:1000,u:'mg',ml:10,l:'amp 1 g/10 ml'},lido:{q:100,u:'mg',ml:5,l:'lidocaína 2% 100 mg/5 ml'}};
+ digo:{q:0.5,u:'mg',ml:2,l:'amp 0,5 mg/2 ml'},proca:{q:1000,u:'mg',ml:10,l:'amp 1 g/10 ml'},lido:{q:100,u:'mg',ml:5,l:'lidocaína 2% 100 mg/5 ml'}};
 const CV={
  ele:{t:'Eléctrica',top:[['Sincronizada','FA: ≥ 200 J de entrada (AHA 2025) · TSV regular / aleteo: 50–100 J · TV monomorfa con pulso: 100 J. Si no revierte, escalá hasta la energía máxima (bifásico).'],
    ['No sincronizada','TV sin pulso / FV / TV polimorfa: desfibrilación 120–200 J bifásico (o la máxima del equipo).'],
@@ -3337,7 +3337,7 @@ function renderCV(){const T=CV[cvTab],ped=cvTab==='ped',w=ped?PEDW:W();
 // ================= Cardioversión 2: directo al grano (estilo MDCalc) =================
 // Elegís la situación → la de elección con la dosis para este paciente y cuánto pasarle → alternativas → Manejo y Evidencia.
 Object.assign(A,{adre:{q:1,u:'mg',ml:1,l:'adrenalina amp 1 mg/1 ml'},mg:{q:250,u:'mg',ml:1,l:'sulfato de magnesio 25%',liq:true},
- aden:{q:6,u:'mg',ml:2,l:'adenosina amp 6 mg/2 ml'},iso:{q:0.2,u:'mg',ml:1,l:'isoproterenol amp 0,2 mg/1 ml'}});
+ aden:{q:6,u:'mg',ml:2,l:'adenosina amp 6 mg/2 ml'},iso:{q:1,u:'mg',ml:5,l:'isoproterenol amp 1 mg/5 ml'}});
 const CV2BIB={
  af:'Van Gelder IC, et al. 2024 ESC Guidelines for the management of atrial fibrillation. Eur Heart J. 2024;45(36):3314-414. doi:10.1093/eurheartj/ehae176',
  svt:'Brugada J, et al. 2019 ESC Guidelines for the management of patients with supraventricular tachycardia. Eur Heart J. 2020;41(5):655-720. doi:10.1093/eurheartj/ehz467',
@@ -3436,7 +3436,7 @@ Object.assign(A,{rocu:{q:50,u:'mg',ml:5,l:'rocuronio amp 50 mg/5 ml'},halo:{q:5,
  gluca:{q:1000,u:'mg',ml:10,l:'gluconato de calcio 10% amp 10 ml (1 g)'},nalox:{q:0.4,u:'mg',ml:1,l:'naloxona amp 0,4 mg/1 ml'},
  dexa:{q:8,u:'mg',ml:2,l:'dexametasona amp 8 mg/2 ml'},metoc:{q:10,u:'mg',ml:2,l:'metoclopramida amp 10 mg/2 ml'},
  levet:{q:500,u:'mg',ml:5,l:'levetiracetam amp 500 mg/5 ml'},hidral:{q:20,u:'mg',ml:1,l:'hidralazina amp 20 mg/1 ml'},
- labe:{q:100,u:'mg',ml:20,l:'labetalol amp 100 mg/20 ml'},morf:{q:10,u:'mg',ml:1,l:'morfina amp 10 mg/1 ml'},furo:{q:20,u:'mg',ml:2,l:'furosemida amp 20 mg/2 ml'}});
+ labe:{q:20,u:'mg',ml:4,l:'labetalol amp 20 mg/4 ml'},morf:{q:10,u:'mg',ml:1,l:'morfina amp 10 mg/1 ml'},furo:{q:20,u:'mg',ml:2,l:'furosemida amp 20 mg/2 ml'}});
 Object.assign(CV2BIB,{
  rsi:'Casey JD, et al. Ketamine or etomidate for tracheal intubation of critically ill adults (RSI). N Engl J Med. 2025. doi:10.1056/NEJMoa2511420',
  sccm:'Acquisto NM, et al. Society of Critical Care Medicine clinical practice guidelines for rapid sequence intubation in the critically ill adult patient: executive summary. Crit Care Med. 2023;51(10):1407-10. doi:10.1097/CCM.0000000000005999',
