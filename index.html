@@ -673,6 +673,10 @@ details.cvd .cvlist{padding:0 8px 8px;margin-top:0}details.cvd .cvc{background:v
 .pres2{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:6px 8px;margin-top:10px;font-size:.9rem;color:var(--dim)}.pres2>span{grid-column:1/-1;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}.pres2 .in{color:var(--fg);min-height:46px;text-align:center;font-size:1.1rem;min-width:0}.pres2 em{font-style:normal}
 .pchk{margin-top:8px;padding:10px 12px;border-radius:var(--r3);background:color-mix(in srgb,var(--bad) 14%,transparent);box-shadow:inset 3px 0 0 var(--bad);display:flex;flex-direction:column;gap:6px;font-size:.88rem}.pchk span{color:var(--dim);font-size:.8rem}.pchkb{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pchkb .btn{min-height:44px;margin:0}
 .mres b{font-size:.95rem}
+.pmx{margin-top:8px}.pmx>summary{list-style:none;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--dim);padding:6px 0;min-height:32px;display:flex;align-items:center;gap:6px}
+.pmx>summary::-webkit-details-marker{display:none}.pmx>summary::after{content:'▾';font-size:.75rem}.pmx[open]>summary::after{content:'▴'}
+.pmxb{display:flex;flex-direction:column;gap:5px;font-size:.82rem;color:var(--muted);line-height:1.35;padding-bottom:4px}.pmxb .xl b{font:600 .68rem var(--font);letter-spacing:.07em;text-transform:uppercase;color:var(--dim);margin-right:5px}
+.xw{display:flex;flex-direction:column;gap:6px;margin-top:4px}.xw>b{font:600 .68rem var(--font);letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
 .disp .in{font-size:3.2rem}.dose .in{font-size:1.9rem}.stp button{min-height:42px}.stp{margin-top:8px!important}
 details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-width:0}
 .csum{font-size:.85rem;font-weight:600;color:var(--dim);white-space:nowrap}.csum.ok{color:var(--ok)}.csum.warn{color:var(--warn)}.csum.bad{color:var(--bad)}
@@ -757,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.04', APP_BUILD='v31', QUIET=true;
+const APP_VER='2026.11.04', APP_BUILD='v32', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -1898,7 +1902,7 @@ const TIT={
 function titHTML(id){const T=TIT[id];if(!T)return '';
   return `<div class="blk"><div class="bh">Inicio y titulación</div><dl class="kv tk"><dt>${T.min?'Mínima':'Inicio'}</dt><dd>${T.i}</dd><dt>Subir</dt><dd>${T.t}</dd></dl><div class="tsrc">${srcHTML(T.s)}</div></div>`}
 const TIT_MS=30*60e3;
-function titOn(p){return false}
+function titOn(p){return !!(p.nw>0&&TIT[p.id])}
 function titCard(p){const T=TIT[p.id];
   return `<div class="titc"><p><b>${T.min?'Mínima':'Inicio'}</b> ${T.i}</p><p><b>Subir</b> ${T.t}</p></div><button type="button" class="titx" data-tit-x="${p.uid}" aria-label="Cerrar sugerencia">×</button>`}
 
@@ -1927,7 +1931,7 @@ function numIn(k,v){if(typeof v!=='number'||!isFinite(v))return NaN;const R=LABR
 function cleanPrep(p,d){if(!p||typeof p!=='object')return null;const s=factoryOf(d),f=(x,hi,df)=>typeof x==='number'&&isFinite(x)&&x>0&&x<=hi?x:df;
   return {n:f(p.n,5000,s.n),vol:f(p.vol,2000,s.vol),q:f(p.q,1e6,s.q),ml:f(p.ml,1000,s.ml),dil:d.dils.includes(p.dil)?p.dil:d.dils[0],add:d.pure?false:p.add===true}}
 function cleanPump(p){const d=p&&typeof p==='object'?byId(p.id):null;if(!d)return null;const b=cleanPrep(p,d),g=(x,hi,df)=>typeof x==='number'&&isFinite(x)&&x>=0&&x<=hi?x:df;
-  return {uid:Number.isInteger(p.uid)&&p.uid>0&&p.uid<1e9?p.uid:0,id:d.id,...b,dose:g(p.dose,1e5,d.d.start),nw:g(p.nw,1e14,0),t0:g(p.t0,1e14,0),h:(Array.isArray(p.h)?p.h:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-300),stk:g(p.stk,999,0),bo:(Array.isArray(p.bo)?p.bo:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-100)}}
+  return {uid:Number.isInteger(p.uid)&&p.uid>0&&p.uid<1e9?p.uid:0,id:d.id,...b,dose:g(p.dose,1e5,d.d.start),nw:g(p.nw,1e14,0),t0:g(p.t0,1e14,0),h:(Array.isArray(p.h)?p.h:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-300),stk:g(p.stk,999,0),ak:typeof p.ak==='string'?p.ak.slice(0,16):'',bo:(Array.isArray(p.bo)?p.bo:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-100)}}
 function cleanPref(P){const o={};if(!P||typeof P!=='object'||Array.isArray(P))return o;
   Object.keys(P).forEach(id=>{const d=byId(id);if(!d)return;const p=cleanPrep(P[id],d);if(p)o[id]=p});return o}
 function deser(r0){const r=clean(r0)||{},o={...fresh(),...r};
@@ -2188,34 +2192,48 @@ function renderPumps(){const box=$('#pumps');
       <label class="dose"><input class="in" data-role="dose" inputmode="decimal" autocomplete="off" aria-label="Dosis en ${unitLbl(d)}"><span class="lbl">${unitLbl(d)}</span></label>
     </div>
     <div class="stp"><button type="button" data-step="-1" aria-label="Bajar dosis">−</button><button type="button" data-step="1" aria-label="Subir dosis">+</button></div>
-    <div class="pm" data-r="pm"></div><div class="hito" data-r="hi"></div><div class="tit" data-r="tit"></div><div class="flags" data-r="fl"></div>
+    <div class="pm" data-r="pm"></div><div class="tit" data-r="tit"></div><div class="hito" data-r="hi"></div><div class="flags" data-r="fl"></div>
+    <details class="pmx"><summary data-r="xs">Detalles</summary><div class="pmxb" data-r="xb"></div></details>
   </article>`}).join('')+(swUsed()?'':'<p class="hint-sw">Deslizá una bomba al costado para quitarla</p>');
   $('#copyBox').hidden=!S.pumps.length;refreshAll()}
 function fitRate(i){i.style.setProperty('--w',Math.max(2,String(i.value||'').length+0.4)+'ch')}
+// Avisos de la bomba (evitar/cuidado, preguntas, hito, concentrada): se ven hasta que editás esa bomba; si cambian, vuelven a aparecer.
+function warnParts(p){const fl=flagsOf(p.id),fx=fl.filter(f=>f.l==='x'),fc=fl.filter(f=>f.l==='c'),t=HITO[p.id]&&HITO[p.id](p);
+  return {fl:fx.map(f=>`<div class="flag x"><b>Evitar con ${CONDN[f.c]}</b> · ${f.t}</div>`).join('')+(fc.length?`<button type="button" class="flag c" data-open="${p.uid}">Cuidado con ${fc.map(f=>CONDN[f.c]).join(' y ')} · ver</button>`:'')+askHTML(p,fx)+liqHTML(p),
+    hi:t?`<div class="hl1">${t}</div>`:'',n:fx.length+(fc.length?1:0)+(t?1:0)}}
+function warnSig(W){const x=(W.fl.replace(/ open/g,'')+W.hi).replace(/<[^>]+>/g,'');let h=5381;for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))|0;return (h>>>0).toString(36)}
+function ackPump(p){p.ak=warnSig(warnParts(p))}
 function refreshPump(p,skip){const el=document.querySelector(`.pump[data-uid="${p.uid}"]`);if(!el)return;
   const d=byId(p.id),ri=el.querySelector('[data-role=rate]'),di=el.querySelector('[data-role=dose]');
   el.querySelector('[data-r=pr]').innerHTML=`${prepShort(p)} ${dilTxt(p)} · ${concLabel(p)}`;
-  const fl=flagsOf(p.id),fx=fl.filter(f=>f.l==='x'),fc=fl.filter(f=>f.l==='c');
-  el.querySelector('[data-r=fl]').innerHTML=fx.map(f=>`<div class="flag x"><b>Evitar con ${CONDN[f.c]}</b> · ${f.t}</div>`).join('')+(fc.length?`<button type="button" class="flag c" data-open="${p.uid}">Cuidado con ${fc.map(f=>CONDN[f.c]).join(' y ')} · ver</button>`:'')+askHTML(p,fx)+liqHTML(p);
+  const WP=warnParts(p),seen=!!p.ak&&p.ak===warnSig(WP);
+  el.querySelector('[data-r=fl]').innerHTML=seen?'':WP.fl;el.querySelector('[data-r=hi]').innerHTML=seen?'':WP.hi;
   if(skip!=='dose')di.value=inFmt(p.dose,skip==='rate'?doseDec(d)+1:doseDec(d));
-  {const hi=el.querySelector('[data-r=hi]'),t=HITO[p.id]&&HITO[p.id](p);if(hi)hi.innerHTML=(t?`<div class="hl1">${t}</div>`:'')+(OJO[p.id]?`<div class="ojo">Ojo: ${OJO[p.id]}</div>`:'')}
-  const tt=el.querySelector('[data-r=tit]');if(tt){const on=titOn(p);tt.innerHTML=on?titCard(p):'';tt.hidden=!on}
-  const pm=el.querySelector('[data-r=pm]');
-  if(needsW(p)){ri.value='';ri.className='in';ri.disabled=true;pm.innerHTML=`<span class="pmt"><span class="w">${needTalla(d)?'Con más de 100 kg cargá la talla: la dosis depende del peso ideal.':'Cargá el peso para calcular.'}</span></span>`;return}
+  const tt=el.querySelector('[data-r=tit]'),on=titOn(p);tt.innerHTML=on?titCard(p):'';tt.hidden=!on;
+  const pm=el.querySelector('[data-r=pm]'),X=[];
+  const fillX=()=>{const T=TIT[p.id];if(T)X.push(`<span class="xl"><b>${T.min?'Mínima':'Inicio'}</b> ${T.i}</span><span class="xl"><b>Subir</b> ${T.t}</span>`);
+    if(OJO[p.id])X.push(`<span class="xl"><b>Ojo</b> ${OJO[p.id]}</span>`);
+    const body=X.join('')+(seen&&(WP.fl||WP.hi)?`<div class="xw"><b>Avisos que ya viste</b>${WP.hi}<div class="flags">${WP.fl}</div></div>`:'');
+    el.querySelector('[data-r=xb]').innerHTML=body;el.querySelector('.pmx').hidden=!body;
+    el.querySelector('[data-r=xs]').textContent='Detalles'+(seen&&WP.n?` · ${WP.n} aviso${WP.n>1?'s':''} visto${WP.n>1?'s':''}`:'')};
+  if(needsW(p)){ri.value='';ri.className='in';ri.disabled=true;pm.innerHTML=`<span class="pmt"><span class="w">${needTalla(d)?'Con más de 100 kg cargá la talla: la dosis depende del peso ideal.':'Cargá el peso para calcular.'}</span></span>`;fillX();return}
   ri.disabled=false;const[sc,st]=statusOf(p),r=rate(p,p.dose);
   if(skip!=='rate')ri.value=isFinite(r)?inFmt(r,1):'';ri.className='in '+sc;fitRate(ri);
+  // Línea corta, siempre visible: fuera de rango, peso usado, cuánto dura, tope de tiempo superado, ml/h raro
   const parts=[];if(st)parts.push(`<span class="${sc==='hi'?'b':'w'}">${st}</span>`);
   const wn=wNote(d);if(wn)parts.push(wn);
-  if(d.unit==='mcg/kg/min'&&Wd(d)>0)parts.push(`${fmt(p.dose*Wd(d),1)} mcg/min`);
-  else if(d.wb&&Wd(d)>0)parts.push(d.perMin?`${fmt(p.dose*Wd(d),2)} ${d.num}/min`:`${perHFmt(p.dose*Wd(d))} ${d.num}/h`);
-  if(d.unit==='mcg/min'&&W()>0)parts.push(`≈ ${fmt(p.dose/W(),3)} gamas`);
-  if(d.id==='labe'&&p.dose>0)parts.push(`llega a 300 mg en ${fmt(300/(p.dose*60),1)} h`);
-  else if(d.perDay)parts.push(`${fmt(d.perMin?p.dose*1440:p.dose*24,0)} ${d.num}/día`);
   const hl=hoursLeft(p);if(isFinite(hl))parts.push(hl>24?'rinde más de 24 h':'dura '+durLbl(hl));
-  {const T=tStat(p);if(T&&!T.over)parts.push(`máx ${fmt(T.mx,0)} h`)}
-  {const D=DMAX[p.id]&&DMAX[p.id](p),a=amt24(p),u=D?D[1]:d.num,a1=D&&D[1]==='mg'&&d.num==='mcg'?a/1000:a;if(a1>=1&&(D||(p.bo||[]).length))parts.push(`24 h: ${amtFmt(D&&D[1]==='mg'&&d.num==='mcg'?a/1000:a,u)}${D?` de ${amtFmt(D[0],D[1])}`:''}`)}
-  if(CHK[p.id])parts.push(`<span class="chk2">Revisar: ${CHK[p.id]}</span>`);
   const rm=rateMsg(p);if(rm)parts.push(`<span class="w">${rm}</span>`);
+  // Detalles: equivalencias, por día, tope de tiempo, acumulado, qué revisar
+  if(d.unit==='mcg/kg/min'&&Wd(d)>0)X.push(`<span class="xl">${fmt(p.dose*Wd(d),1)} mcg/min</span>`);
+  else if(d.wb&&Wd(d)>0)X.push(`<span class="xl">${d.perMin?`${fmt(p.dose*Wd(d),2)} ${d.num}/min`:`${perHFmt(p.dose*Wd(d))} ${d.num}/h`}</span>`);
+  if(d.unit==='mcg/min'&&W()>0)X.push(`<span class="xl">≈ ${fmt(p.dose/W(),3)} gamas</span>`);
+  if(d.id==='labe'&&p.dose>0)X.push(`<span class="xl">Llega a 300 mg en ${fmt(300/(p.dose*60),1)} h</span>`);
+  else if(d.perDay)X.push(`<span class="xl">${fmt(d.perMin?p.dose*1440:p.dose*24,0)} ${d.num}/día</span>`);
+  {const T=tStat(p);if(T&&!T.over)X.push(`<span class="xl">Máximo ${fmt(T.mx,0)} h</span>`)}
+  {const D=DMAX[p.id]&&DMAX[p.id](p),a=amt24(p),u=D?D[1]:d.num,a1=D&&D[1]==='mg'&&d.num==='mcg'?a/1000:a;if(a1>=1&&(D||(p.bo||[]).length)){const over=D&&a1>D[0];const t=`24 h: ${amtFmt(a1,u)}${D?` de ${amtFmt(D[0],D[1])}`:''}`;if(over)parts.push(`<span class="b">${t}</span>`);else X.push(`<span class="xl">${t}</span>`)}}
+  if(CHK[p.id])X.push(`<span class="xl"><b>Revisar</b> ${CHK[p.id]}</span>`);
+  fillX();
   pm.innerHTML=`<span class="pmt">${parts.join('<span aria-hidden="true"> · </span>')}</span>${hasBol(p.id)?`<button type="button" class="mini" data-bolo="${p.uid}">Bolo</button>`:''}`}
 
 // Hitos: cuando la dosis cruza un umbral que cambia la conducta. Ojo: lo más importante a vigilar, siempre visible.
@@ -2253,7 +2271,7 @@ function refreshAll(skipUid,skip){S.pumps.forEach(p=>refreshPump(p,p.uid===skipU
 function sheetBusy(){const a=document.activeElement;return a&&$('#sheet').contains(a)&&a.tagName==='INPUT'}
 let restT=0;
 $('#pumps').addEventListener('input',e=>{const role=e.target.dataset.role;if(!role)return;const uid=+e.target.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);
-  if(role==='rate')fitRate(e.target);const v=num(e.target.value);if(!(v>=0&&v<=1e5))return;if(role==='dose')p.dose=v;else p.dose=doseFrom(p,v);p.nw=0;
+  if(role==='rate')fitRate(e.target);const v=num(e.target.value);if(!(v>=0&&v<=1e5))return;ackPump(p);if(role==='dose')p.dose=v;else p.dose=doseFrom(p,v);p.nw=0;
   refreshPump(p,role);clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts()},250)});
 $('#pumps').addEventListener('focusout',e=>{if(e.target.dataset&&e.target.dataset.role){save();refreshAll()}});
 $('#pumps').addEventListener('click',e=>{
@@ -2265,7 +2283,7 @@ $('#pumps').addEventListener('click',e=>{
 function nextDose(p,dir){const L=byId(p.id).lad,x=p.dose;
   if(dir>0){const v=L.find(v=>v>x+1e-9);if(v!=null)return v;const inc=L[L.length-1]-L[L.length-2];return +(x+inc).toFixed(4)}
   for(let i=L.length-1;i>=0;i--)if(L[i]<x-1e-9)return L[i];return L[0]}
-function stepPump(btn){const uid=+btn.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);p.dose=nextDose(p,+btn.dataset.step);p.nw=0;refreshPump(p);
+function stepPump(btn){const uid=+btn.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);ackPump(p);p.dose=nextDose(p,+btn.dataset.step);p.nw=0;refreshPump(p);
   clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts()},200)}
 let holdT=null;
 function stopHold(){clearTimeout(holdT);holdT=null;document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'))}
