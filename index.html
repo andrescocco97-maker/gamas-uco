@@ -1835,6 +1835,8 @@ BIBLIO.push(
  'Gaies MG, et al. Vasoactive-inotropic score as a predictor of morbidity and mortality in infants after cardiopulmonary bypass. Pediatr Crit Care Med. 2010;11(2):234-8. doi:10.1097/PCC.0b013e3181b806fc (VIS)',
  'Koponen T, et al. Vasoactive-inotropic score and the prediction of morbidity and mortality after cardiac surgery. Br J Anaesth. 2019;122(4):428-36. doi:10.1016/j.bja.2018.12.019 (VIS en adultos)',
  'Cockcroft DW, Gault MH. Prediction of creatinine clearance from serum creatinine. Nephron. 1976;16(1):31-41. doi:10.1159/000180580',
+ 'Inker LA, et al. New creatinine- and cystatin C-based equations to estimate GFR without race. N Engl J Med. 2021;385(19):1737-49. doi:10.1056/NEJMoa2102953 (CKD-EPI 2021)',
+ 'Steffel J, et al. 2021 European Heart Rhythm Association practical guide on the use of non-vitamin K antagonist oral anticoagulants in patients with atrial fibrillation. Europace. 2021;23(10):1612-76. doi:10.1093/europace/euab065 (dosificar con Cockcroft-Gault)',
  'Pai MP, Paloucek FP. The origin of the "ideal" body weight equations. Ann Pharmacother. 2000;34(9):1066-9. doi:10.1345/aph.19381 (Devine)',
  'Russell JA, et al. Vasopressin versus norepinephrine infusion in patients with septic shock (VASST). N Engl J Med. 2008;358(9):877-87. doi:10.1056/NEJMoa067373',
  'Levy B, et al. Epinephrine versus norepinephrine for cardiogenic shock after acute myocardial infarction (OptimaCC). J Am Coll Cardiol. 2018;72(2):173-82. doi:10.1016/j.jacc.2018.04.051',
@@ -2585,8 +2587,16 @@ const CALCS=[
  // ---------- Cuentas ----------
  {id:'pam',g:'Cuentas',t:'PAM',kw:'presion arterial media',f:['n:tas','n:tad'],run(){const t=S.tas,d=S.tad;if(!okA(t,d))return miss('TAS y TAD');const m=(t+2*d)/3;
    return R(m<65?'bad':'ok',`${fmt(m,0)} mmHg`,`PAM = (TAS + 2 × TAD) / 3 = <b>${fmt(m,0)} mmHg</b>.${m<65?' Por debajo de 65.':''}`)}},
- {id:'clcr',g:'Cuentas',t:'Clearance de creatinina',kw:'cockcroft gault filtrado renal clcr',f:['n:edad','n:peso','n:creat','x:sex'],run(){const c=crcl();if(!isFinite(c))return miss('edad, peso y creatinina');
-   const ob=obese()&&isFinite(ajust());return R(c<30?'bad':c<60?'warn':'ok',`${fmt(c,0)} ml/min`,`Cockcroft-Gault${ob?` con peso ajustado (${fmt(ajust(),0)} kg) porque el IMC es ≥ 30`:''}: <b>${fmt(c,0)} ml/min</b>.${c<15?' Menos de 15: casi sin filtrado.':c<30?' Menos de 30: ajustá enoxaparina, anticoagulantes directos, morfina y antibióticos.':c<60?' Entre 30 y 60: revisá la dosis de las drogas renales.':''} Con creatinina inestable (falla renal aguda) sobreestima el filtrado.`)}},
+ {id:'clcr',g:'Cuentas',t:'Clearance de creatinina',kw:'cockcroft gault ckd epi egfr filtrado glomerular renal clcr',f:['n:edad','n:peso','n:creat','x:sex'],run(){const c=crcl();if(!isFinite(c))return miss('edad, peso y creatinina');
+   const ob=obese()&&isFinite(ajust());
+   const k=S.sex==='F'?0.7:0.9,al=S.sex==='F'?-0.241:-0.302,q=S.creat/k;
+   const e=142*Math.pow(Math.min(q,1),al)*Math.pow(Math.max(q,1),-1.2)*Math.pow(0.9938,S.edad)*(S.sex==='F'?1.012:1);
+   const sc=bsa(),eAbs=isFinite(sc)?e*sc/1.73:NaN;
+   const lv=Math.min(c,isFinite(eAbs)?eAbs:e);
+   return R(lv<30?'bad':lv<60?'warn':'ok',`CG ${fmt(c,0)} · CKD-EPI ${fmt(e,0)}`,
+    `<b>Cockcroft-Gault: ${fmt(c,0)} ml/min</b>${ob?` (peso ajustado, ${fmt(ajust(),0)} kg)`:''}<br><b>CKD-EPI 2021: ${fmt(e,0)} ml/min/1,73 m²</b>${isFinite(eAbs)?` (${fmt(eAbs,0)} ml/min con tu superficie corporal)`:''}`
+    +`<br><b>Para dosificar drogas: Cockcroft-Gault. Para estadificar la enfermedad renal: CKD-EPI.</b>${c<30?' Con menos de 30, ajustá las drogas renales.':''}`
+    +`<br>Con creatinina inestable ninguna sirve.`)}},
  {id:'peso',g:'Cuentas',t:'Peso ideal, ajustado e IMC',kw:'imc superficie corporal peso ideal ajustado',f:['n:peso','n:talla','x:sex'],run(){if(!okA(S.peso,S.talla))return miss('peso y talla');
    const b=bmi(),i=ideal(),a=ajust(),sc=bsa();return R(b>=40?'warn':'ok',`IMC ${fmt(b,1)}`,`IMC <b>${fmt(b,1)}</b> · peso ideal <b>${fmt(i,0)} kg</b> (Devine)${b>=30&&isFinite(a)?` · ajustado <b>${fmt(a,0)} kg</b>`:''} · superficie <b>${fmt(sc,2)} m²</b>.`)}},
  {id:'cacor',g:'Cuentas',t:'Calcio corregido por albúmina',kw:'calcio albumina hipocalcemia',f:['n:ca','n:alb'],run(){const c=S.ca,a=cV('alb');if(!okA(c,a))return miss('calcio y albúmina');const x=c+0.8*(4-a);
