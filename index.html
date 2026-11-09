@@ -2575,7 +2575,7 @@ const CK={na:'Na⁺|mEq/l|0',cl:'Cl⁻|mEq/l|0',hco3:'HCO₃⁻|mEq/l|1',alb:'Al
 const CRNG={na:[90,200],cl:[50,160],hco3:[2,60],alb:[0.5,7],glu:[10,2500],urea:[2,600],osmm:[200,450],pao2:[20,700],paco2:[8,150],qt:[200,800],
  hb:[2,25],hto:[8,75],sao2:[30,100],svo2:[10,100],pvc:[-5,40],paps:[5,150],papd:[0,80],pvco2:[10,160],bili:[0.1,60],mlh:[0.1,2000]};
 function cV(k){if(k in PK)return S[k];const v=calcS()[k];return typeof v==='number'&&isFinite(v)?v:NaN}
-const cB=k=>calcS()['b_'+k]===true,CDEF={sca:'n',inf:'154'},cSel=k=>{const v=calcS()['s_'+k];return v==null?(CDEF[k]||null):String(v)};
+const cB=k=>calcS()['b_'+k]===true,CDEF={sca:'n',inf:'513'},cSel=k=>{const v=calcS()['s_'+k];return v==null?(CDEF[k]||null):String(v)};
 const okA=(...a)=>a.every(x=>isFinite(x));
 const band=(x,T)=>{for(const[lim,p]of T)if(x<lim)return p;return T[T.length-1][1]};
 const lerp=(x,T)=>{if(x<=T[0][0])return T[0][1];for(let i=1;i<T.length;i++)if(x<=T[i][0]){const[a,pa]=T[i-1],[b,pb]=T[i];return pa+(pb-pa)*(x-a)/(b-a)}return T[T.length-1][1]};
@@ -2615,11 +2615,16 @@ const CALCS=[
  {id:'agua',g:'Cuentas',t:'Déficit de agua libre',kw:'hipernatremia agua libre',f:['n:na','n:peso','n:edad','x:sex'],run(){const na=cV('na');if(!okA(na,S.peso,S.edad))return miss('Na⁺, peso y edad');if(na<=145)return R('','no aplica','Solo con Na > 145.');
    const f=S.sex==='F'?(S.edad>65?0.45:0.5):(S.edad>65?0.5:0.6),act=f*S.peso,def=act*(na/140-1);
    return R('warn',`${fmt(def,1)} l`,`Agua corporal ${fmt(act,0)} l (${fmt(f,2).replace('.',',')} × peso). Déficit <b>${fmt(def,1)} litros</b>, sin contar las pérdidas que siguen. Si es crónica (> 48 h), bajá el Na no más de 10 mEq/l en 24 h: en 48 h son ≈ <b>${fmt(def*1000/48,0)} ml/h</b> + pérdidas. Controlá el Na cada 4–6 h.`)}},
- {id:'nainf',g:'Cuentas',t:'Cuánto cambia el Na con 1 litro',kw:'adrogue madias hiponatremia hipertonica sodio',f:['n:na','n:peso','n:edad','x:sex','s:inf|Suero|0:Dx5%,77:SF 0,45%,130:Ringer,154:SF 0,9%,513:Hipertónica 3%'],run(){const na=cV('na'),inf=+(cSel('inf')||154);if(!okA(na,S.peso,S.edad))return miss('Na⁺, peso y edad');
-   const f=S.sex==='F'?(S.edad>65?0.45:0.5):(S.edad>65?0.5:0.6),act=f*S.peso,dl=(inf-na)/(act+1),o=[`Adrogué-Madias: 1 litro cambia el Na en <b>${dl>0?'+':''}${fmt(dl,1)} mEq/l</b> (agua corporal ${fmt(act,0)} l).`];
-   if(na<135&&dl>0)o.push(`Para subir 6 mEq/l: ≈ <b>${fmt(6/dl*1000,0)} ml</b>. Con síntomas graves: 150 ml de hipertónica 3% en 20 min, repetible hasta subir 5 mEq/l (guía europea 2014). Tope: 10 mEq/l en 24 h (8 si Na < 120 con alcoholismo, desnutrición, hipokalemia o cirrosis).`);
-   if(na>145&&dl<0)o.push(`Para bajar 10 mEq/l: ≈ <b>${fmt(10/-dl,1)} litros</b> en 24 h.`);
-   o.push('La cuenta no incluye la diuresis ni otras pérdidas: controlá el Na cada 2–4 h al principio.');return R(Math.abs(dl)>8?'warn':'ok',`${dl>0?'+':''}${fmt(dl,1)} por litro`,o.join('<br>'))}},
+ {id:'nainf',g:'Cuentas',t:'Hiponatremia: fórmula de Adrogué',kw:'adrogue madias hiponatremia hipertonica sodio',f:['n:na','n:peso','n:edad','x:sex','s:inf|Suero|513:Hipertónica 3%,154:SF 0,9%,130:Ringer'],run(){const na=cV('na'),inf=+(cSel('inf')||513),nom=inf>=513?'hipertónica 3%':inf>=154?'SF 0,9%':'Ringer';if(!okA(na,S.peso,S.edad))return miss('Na⁺, peso y edad');
+   if(na>=135)return R('','no aplica',na>145?'Con Na > 145 usá <b>Déficit de agua libre</b>.':'Solo con Na < 135.');
+   const f=S.sex==='F'?(S.edad>65?0.45:0.5):(S.edad>65?0.5:0.6),act=f*S.peso,dl=(inf-na)/(act+1),o=[`<b>Adrogué-Madias:</b> ΔNa por litro = (Na del suero − Na) ÷ (agua corporal + 1) = (${inf} − ${fmt(na,0)}) ÷ (${fmt(act,0)} + 1) = ${fmt(dl,1)}.`];
+   if(dl<=0)return R('warn','no sube el Na',o.join('<br>')+'<br>Con este suero el Na no sube: usá hipertónica 3%.');
+   const ml=6/dl*1000,meq=ml/1000*inf;
+   o.push(`Para subir <b>6 mEq/l en 24 h</b>: <b>${fmt(ml,0)} ml</b> de ${nom} (≈ <b>${fmt(ml/24,0)} ml/h</b>). Aporta ${fmt(meq,0)} mEq de Na (≈ ${fmt(meq*0.0585,1).replace('.',',')} g de sal).`);
+   if(na<130)o.push('Síntomas graves (convulsión, coma): 150 ml de hipertónica 3% en 20 min, repetible hasta subir 5 mEq/l (guía europea 2014).');
+   o.push('Sirve para la hiponatremia hipovolémica o con síntomas graves. Si es hipervolémica (IC, cirrosis) no repongas Na: restricción hídrica y diurético.');
+   o.push(`Tope: 10 mEq/l en 24 h (8 si Na < 120 con alcoholismo, desnutrición, hipokalemia o cirrosis). La cuenta no incluye diuresis: controlá el Na cada 2–4 h.`);
+   return R(na<120?'bad':'warn',`${fmt(ml,0)} ml de ${nom}`,o.join('<br>'))}},
  {id:'pafi',g:'Cuentas',t:'PaFi y gradiente A-a',kw:'pafi pao2 fio2 sdra gradiente alveolo arterial',f:['n:pao2','n:fio2','n:paco2','n:edad'],run(){const p=cV('pao2'),fi=S.fio2,pc=cV('paco2');if(!okA(p,fi))return miss('PaO₂ y FiO₂');
    const pf=p/(fi/100),o=[`PaFi <b>${fmt(pf,0)}</b>.${pf<300?` Con PEEP ≥ 5 y cuadro de SDRA: ${pf<100?'grave (< 100)':pf<200?'moderado (100–200)':'leve (200–300)'}.`:''}`];
    if(isFinite(pc)){const A2=fi/100*713-pc/0.8,g=A2-p,e=isFinite(S.edad)?S.edad/4+4:NaN;o.push(`Gradiente A-a <b>${fmt(g,0)} mmHg</b>${isFinite(e)?` (esperado para la edad ≈ ${fmt(e,0)})`:''}. Con FiO₂ alta el gradiente sube solo: tomalo con aire ambiente.`)}
