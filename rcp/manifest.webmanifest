@@ -1,0 +1,16 @@
+{
+  "name": "Código RCP",
+  "short_name": "RCP",
+  "description": "Cronómetro de código de paro: ciclos, metrónomo, drogas y texto para la evolución",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06080a",
+  "theme_color": "#06080a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
