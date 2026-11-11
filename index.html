@@ -761,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.04', APP_BUILD='v32', QUIET=true;
+const APP_VER='2026.11.11', APP_BUILD='v33', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -2014,6 +2014,9 @@ const needTalla=d=>!!d.ob&&S.peso>100&&!(S.talla>0);
 function wNote(d){if(!d.wb||!d.ob||!obese())return '';return `con ${fmt(Wd(d),1)} kg (${d.ob==='id'?'peso ideal':'peso ajustado'})`}
 function crcl(){if(!(S.edad>0&&S.creat>0&&S.peso>0))return NaN;const wt=obese()&&isFinite(ajust())?ajust():S.peso;
   let c=(140-S.edad)*wt/(72*S.creat);if(S.sex==='F')c*=0.85;return c}
+// CKD-EPI 2021 (sin raza), ml/min/1,73 m². Inker, NEJM 2021.
+function ckdepi(){if(!(S.edad>0&&S.creat>0))return NaN;const k=S.sex==='F'?0.7:0.9,al=S.sex==='F'?-0.241:-0.302,q=S.creat/k;
+  return 142*Math.pow(Math.min(q,1),al)*Math.pow(Math.max(q,1),-1.2)*Math.pow(0.9938,S.edad)*(S.sex==='F'?1.012:1)}
 
 // ================= Preparaciones =================
 function factoryOf(d){return {n:d.std.n,vol:d.pure?+(d.std.n*d.amp.ml).toFixed(1):d.std.vol,q:d.amp.q,ml:d.amp.ml,dil:d.dils[0],add:false}}
@@ -2103,12 +2106,12 @@ function syncInputs(){
   $('#peso').value=isFinite(S.peso)?inFmt(S.peso,1):'';$('#talla').value=isFinite(S.talla)?inFmt(S.talla,0):'';
   $('#edad').value=isFinite(S.edad)?inFmt(S.edad,0):'';$('#creat').value=isFinite(S.creat)?inFmt(S.creat,2):'';
   $('#kk').value=isFinite(S.k)?inFmt(S.k,1):'';$('#mgg').value=isFinite(S.mg)?inFmt(S.mg,1):'';$('#caa').value=isFinite(S.ca)?inFmt(S.ca,1):'';
-  ['fc','tas','tad','plaq','spo2','fr','fio2'].forEach(k=>$('#'+k).value=isFinite(S[k])?inFmt(S[k],0):'');$('#moreBox').open=['mg','ca','fc','tas','tad','plaq','spo2','fr','fio2'].some(k=>isFinite(S[k]))}
+  ['fc','tas','tad','plaq','spo2','fr','fio2'].forEach(k=>$('#'+k).value=isFinite(S[k])?inFmt(S[k],0):'');$('#moreBox').open=false}
 function renderPt(){renderBar();const ms=[isFinite(S.fc)?`FC ${fmt(S.fc,0)}`:'',isFinite(S.tas)?(isFinite(S.tad)?`TA ${fmt(S.tas,0)}/${fmt(S.tad,0)}`:`TAS ${fmt(S.tas,0)}`):'',isFinite(pamOf())?`PAM ${fmt(pamOf(),0)}`:'',isFinite(S.plaq)?`Plaq ${fmt(S.plaq,0)}.000`:'',isFinite(S.mg)?`Mg ${fmt(S.mg,1)}`:'',isFinite(S.ca)?`Ca ${fmt(S.ca,1)}`:'',isFinite(S.spo2)?`SpO₂ ${fmt(S.spo2,0)}%`:'',isFinite(S.fr)?`FR ${fmt(S.fr,0)}`:'',isFinite(S.fio2)?`FiO₂ ${fmt(S.fio2,0)}%`:''].filter(Boolean);
   const po=$('#pamOut');if(po)po.innerHTML=isFinite(pamOf())?`PAM <b>${fmt(pamOf(),0)}</b> mmHg`:'';$('#moreSum').innerHTML=`<span class="mst"><b>Signos vitales y otros labos</b><span>${ms.length?ms.join(' · '):'FC, TA, SpO₂, FR, FiO₂, plaquetas, Mg²⁺, Ca²⁺'}</span></span>`;if(typeof renderSits==='function'&&$('#sits').children.length){const ak=JSON.stringify(autoConds());if(ak!==renderPt._ak){renderPt._ak=ak;renderSits()}}
   document.querySelectorAll('#sexSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.sex));
   const b=bmi(),c=crcl(),out=[];
-  if(isFinite(c))out.push(`ClCr <b>${fmt(c,0)}</b> ml/min <span>(Cockcroft-Gault${obese()?', peso ajustado':''})</span>`);
+  if(isFinite(c)){const e=ckdepi();out.push(`<b>Cockcroft-Gault ${fmt(c,0)}</b>${isFinite(e)?` · <b>CKD-EPI ${fmt(e,0)}</b>`:''} ml/min${obese()?' <span>(CG con peso ajustado)</span>':''}`)}
   if(isFinite(b))out.push(obese()?`<span class="ob">IMC ${fmt(b,0)}: sedantes, opioides y bloqueantes se calculan con peso corregido</span>`:`IMC ${fmt(b,0)}`);
   if(S.peso>100&&!(S.talla>0))out.push(`<span class="ob">Cargá la talla: en obesos sedantes, opioides y bloqueantes se ajustan</span>`);
   if(S.k<3.5)out.push(`<span class="ob">K⁺ bajo</span>`);if(S.mg<1.7)out.push(`<span class="ob">Mg²⁺ bajo</span>`);if(S.ca<8.5)out.push(`<span class="ob">Ca²⁺ bajo (corregilo por albúmina)</span>`);
@@ -2126,7 +2129,7 @@ $('#newBox').addEventListener('click',e=>{const t=e.target.closest('button');if(
   $('#newBox').innerHTML='<button type="button" class="ghost" id="newBtn">Nuevo paciente</button>'});
 
 
-function renderBar(){const b=$('#pbar');const t=[];if(bedIds().length>1||S.nom)t.push(`<b>Cama ${esc(BEDS.cur)}${S.nom?' · '+esc(S.nom):''}</b>`);if(W()>0)t.push(`<b>${fmt(W(),1)} kg</b>`);const c=crcl();if(isFinite(c))t.push(`ClCr ${fmt(c,0)}`);
+function renderBar(){const b=$('#pbar');const t=[];if(bedIds().length>1||S.nom)t.push(`<b>Cama ${esc(BEDS.cur)}${S.nom?' · '+esc(S.nom):''}</b>`);if(W()>0)t.push(`<b>${fmt(W(),1)} kg</b>`);const c=crcl(),ek=ckdepi();if(isFinite(c))t.push(`CG ${fmt(c,0)}${isFinite(ek)?` · CKD-EPI ${fmt(ek,0)}`:''}`);
   if(isFinite(S.k))t.push(`<span class="${S.k<3.5||S.k>5.5?'s-bad':''}">K⁺ ${fmt(S.k,1)}</span>`);if(isFinite(S.mg))t.push(`<span class="${S.mg<1.7?'s-bad':''}">Mg²⁺ ${fmt(S.mg,1)}</span>`);
   const AB={tv:'TV/EV',brad:'BAV',qt:'QT largo',isq:'Isquemia',hipo:'↓TA',bg:'Bajo gasto',eao:'EAo/TSVI',iamvd:'IAM VD',bronco:'Bronco',fer:'FEy<40',dis:'Disección',tapo:'Taponam.',conv:'Convulsiones',ir:'IR',hep:'Hepatopatía',sang:'Sangrado',cdif:'C. difficile',neum:'Neumonía',ippb:'IPPB',deli:'Delirium',emb:'Embarazo',hiperk:'Hiper K',mias:'Miastenia',park:'Parkinson',wpw:'WPW',em:'EM sev.',iao:'IAo sev.',im:'IM sev.',prot:'Prótesis mec.',hp:'HP/VD',shunt:'Shunt I→D',eisen:'Eisenmenger'};
   activeConds().forEach(k=>t.push(`<span class="s-bad">${AB[k]||k}</span>`));b.innerHTML=t.join('')||'Cargá el peso'}
@@ -2589,8 +2592,7 @@ const CALCS=[
    return R(m<65?'bad':'ok',`${fmt(m,0)} mmHg`,`PAM = (TAS + 2 × TAD) / 3 = <b>${fmt(m,0)} mmHg</b>.${m<65?' Por debajo de 65.':''}`)}},
  {id:'clcr',g:'Cuentas',t:'Clearance de creatinina',kw:'cockcroft gault ckd epi egfr filtrado glomerular renal clcr',f:['n:edad','n:peso','n:creat','x:sex'],run(){const c=crcl();if(!isFinite(c))return miss('edad, peso y creatinina');
    const ob=obese()&&isFinite(ajust());
-   const k=S.sex==='F'?0.7:0.9,al=S.sex==='F'?-0.241:-0.302,q=S.creat/k;
-   const e=142*Math.pow(Math.min(q,1),al)*Math.pow(Math.max(q,1),-1.2)*Math.pow(0.9938,S.edad)*(S.sex==='F'?1.012:1);
+   const e=ckdepi();
    const sc=bsa(),eAbs=isFinite(sc)?e*sc/1.73:NaN;
    const lv=Math.min(c,isFinite(eAbs)?eAbs:e);
    return R(lv<30?'bad':lv<60?'warn':'ok',`CG ${fmt(c,0)} · CKD-EPI ${fmt(e,0)}`,
