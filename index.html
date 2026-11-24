@@ -761,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.11', APP_BUILD='v33', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v34', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -1402,6 +1402,47 @@ pd('m_espiro','m_kcl','evi','Antialdosterónico + KCl: hiperkalemia.','hiperkale
 pd(['m_ieca','m_sacu'],'m_kcl','sum','Hiperkalemia aditiva: controlá el K⁺.','más hiperkalemia');
 pd('m_tmp',['m_ieca','m_sacu','m_espiro','hep'],'sum','El TMS sube el K⁺: con IECA, espironolactona o heparina, hiperkalemia.','más hiperkalemia');
 const PDM2={};PD.forEach(x=>{const key=pk(x.a,x.b);if(!PDM2[key])PDM2[key]=x});
+
+// ================= Cabalgamiento: cómo superponer o pasar de una droga a otra =================
+// Tipos: pair = las dos bombas están corriendo (a viene antes que b, salvo any:true); vo = pasaje de una bomba a vía oral (se ve siempre en esa bomba).
+// st = pasos en orden. ev = qué tan firme es la base: 'ft' ficha técnica, 'ex' consenso o práctica de expertos, 'ob' observacional o metaanálisis, 'ec' ensayo extrapolado.
+const TRN=[
+ {a:'milri',b:'levo',t:'Milrinona → levosimendán',s:'no hace falta cortar antes; vigilá la TA',ev:'ex',
+  st:['Arrancá el levosimendán <b>sin carga</b> y dejá la milrinona corriendo.','Juntas suman vasodilatación: controlá la TA a los 15–30 min y cada hora las primeras horas.','Si la TA aguanta, bajá la milrinona a la mitad y cortala en 1–2 h (vida media ≈ 2–3 h, más larga con ClCr bajo).','Si cae la TA, cortá primero la <b>milrinona</b>: se va en horas. El levosimendán no se apaga, su metabolito activo dura unos 7–10 días.'],
+  src:'Ningún ensayo compara esquemas de superposición; es práctica de expertos. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005 · Bouchez S, et al. Cardiovasc Drugs Ther. 2018;32(6):617-24. doi:10.1007/s10557-018-6838-2'},
+ {a:'dobu',b:'levo',t:'Dobutamina → levosimendán',s:'bajá la dobutamina de a poco; el levo tarda en hacer efecto',ev:'ex',
+  st:['Arrancá el levosimendán <b>sin carga</b> con la dobutamina corriendo.','Bajá la dobutamina de a 2,5 mcg/kg/min cada 30–60 min mientras la TA, la diuresis y el lactato se sostengan.','Si empeora al bajar, volvé un escalón y esperá: el efecto pleno del levosimendán llega horas después.'],
+  src:'Práctica de expertos, sin ensayo sobre el esquema de retiro. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005'},
+ {a:'dobu',b:'milri',t:'Dobutamina → milrinona',s:'no cortes la dobutamina rápido: la milrinona tarda horas',ev:'ex',
+  st:['Arrancá la milrinona <b>sin bolo</b> (hipotensión) con la dobutamina corriendo.','La milrinona tarda horas en llegar a su efecto pleno: bajá la dobutamina de a 2,5 cada 30–60 min, no de golpe.','Controlá TA, FC y arritmias: las dos juntas dan más taquiarritmias.'],
+  src:'Práctica de expertos. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005'},
+ {a:'nora',b:'vaso',any:true,t:'Destete: noradrenalina y vasopresina',s:'al destetar, sacá primero la noradrenalina',ev:'ob',
+  st:['Bajá y cortá primero la <b>noradrenalina</b>; dejá la vasopresina para el final.','Con la noradrenalina apagada y la PAM estable, cortá la vasopresina.','Controlá la PAM de cerca las primeras horas: el rebote de hipotensión es el riesgo.'],
+  src:'Metaanálisis de estudios casi todos retrospectivos, en shock séptico: menos hipotensión si se saca antes la noradrenalina, sin diferencia de mortalidad; un estudio reciente no halló diferencias. En shock cardiogénico es extrapolación. Metaanálisis en Shock 2020. doi:10.1097/SHK.0000000000001345 · Revisión con datos individuales en Pharmacotherapy 2019. doi:10.1002/phar.2265'},
+ {a:'propo',b:'dexme',t:'Propofol → dexmedetomidina',s:'dexme sin carga y bajá el propofol de a poco',ev:'ex',
+  st:['Iniciá la dexmedetomidina <b>sin carga</b> (la carga da bradicardia e hipotensión) con el propofol corriendo.','Esperá 30–60 min a que haga efecto y bajá el propofol de a poco según RASS.','Vigilá FC y TA, sobre todo con betabloqueante, amiodarona o BAV. La dexmedetomidina sola no alcanza para sedación profunda.'],
+  src:'PADIS 2025 sugiere dexmedetomidina sobre propofol en ventilados (recomendación condicional); la forma de superponer es práctica. Lewis K, et al. Crit Care Med. 2025;53(3):e711-27. doi:10.1097/CCM.0000000000006574'},
+ {a:'remi',b:'fenta',t:'Remifentanilo → fentanilo',s:'dá el opioide antes de bajar el remifentanilo',ev:'ec',remiTo:1,
+  st:['Dá el opioide de transición <b>antes</b> de cortar: el remifentanilo se va en minutos y el paciente queda sin analgesia.','Bajalo de a poco en vez de cortarlo de golpe.','Evaluá con CPOT o BPS a los 15–30 min de bajarlo y reforzá si hace falta.'],
+  src:'ECA en cirugía de tiroides (no en UCI): el retiro gradual demoró el primer pedido de analgesia (76 vs 9 min). BMC Anesthesiol. 2019. doi:10.1186/s12871-019-0731-9'},
+ {a:'remi',b:'morf',t:'Remifentanilo → morfina',s:'dá el opioide antes de bajar el remifentanilo',ev:'ec',
+  st:['Dá la morfina <b>antes</b> de cortar: el remifentanilo se va en minutos y el paciente queda sin analgesia.','Bajalo de a poco en vez de cortarlo de golpe.','Evaluá con CPOT o BPS a los 15–30 min de bajarlo. Con ClCr bajo, la morfina se acumula.'],
+  src:'ECA en cirugía de tiroides (no en UCI): el retiro gradual demoró el primer pedido de analgesia (76 vs 9 min). BMC Anesthesiol. 2019. doi:10.1186/s12871-019-0731-9'},
+ {a:'esmo',vo:1,t:'Esmolol → betabloqueante oral',s:'dá el oral con el esmolol corriendo',ev:'ft',
+  st:['El esmolol dura 20–30 min al cortarlo: por eso hay que superponer.','Dá la <b>primera dosis del oral</b> con el esmolol corriendo.','A los 30 min, bajá el esmolol a la mitad.','Tras la segunda dosis del oral, si la FC y la TA se sostienen 1 h, cortá el esmolol.'],
+  src:'Esquema de la ficha técnica de Brevibloc para pasar a otro fármaco; con betabloqueante oral se aplica por extensión.'},
+ {a:'amio',vo:1,t:'Amiodarona EV → oral',s:'la oral inicial depende de cuánto lleva la bomba',ev:'ft',
+  st:['Pasá a oral cuando la arritmia esté estable (la mayoría, a las 48–96 h de EV).','Dosis oral inicial según cuánto lleva la bomba: <b>menos de 1 semana 800–1600 mg/día</b>; 1–3 semanas 600–800; más de 3 semanas 400.','La carga que dio la EV ya cuenta: no repitas la carga completa.','Seguí con FC, PR y QTc.'],
+  src:'Ficha técnica de amiodarona EV (tabla de conversión a vía oral).'},
+ {a:'hep',vo:1,t:'Heparina → anticoagulante oral',s:'DOAC: sin superponer. Acenocumarol: sí',ev:'ft',
+  st:['<b>Apixabán o rivaroxabán</b>: cortá la bomba y dá la primera dosis en ese momento, sin superponer.','Dabigatrán y edoxabán en TEP/TVP: necesitan antes al menos 5 días de heparina.','<b>Acenocumarol</b>: sí se superpone. En TEP/TVP, mínimo 5 días de heparina y RIN ≥ 2 por 24 h antes de cortarla.'],
+  src:'Fichas técnicas de apixabán y rivaroxabán. Kearon C, et al. Chest. 2016;149(2):315-52. doi:10.1016/j.chest.2015.11.026'}
+];
+const TRNEV={ft:'Base: ficha técnica',ex:'Base: práctica de expertos, sin ensayo',ob:'Base: estudios observacionales y metaanálisis',ec:'Base: ensayo en otro contexto (extrapolado)'};
+function trnPair(){const ix=id=>S.pumps.findIndex(p=>p.id===id);return TRN.filter(x=>!x.vo&&ix(x.a)>=0&&ix(x.b)>=0&&(x.any||ix(x.a)<ix(x.b)))}
+function trnFor(id){return TRN.filter(x=>x.vo?x.a===id:trnPair().includes(x)&&(x.a===id||x.b===id))}
+function trnBody(x){return `<ol class="steps">${x.st.map(s=>`<li>${s}</li>`).join('')}</ol><p class="hint"><b>${TRNEV[x.ev]}.</b> ${x.src}</p>`}
+function trnSheet(p){const L=trnFor(p.id);return L.map(x=>`<details class="blk prep"><summary><span class="ps"><small>${x.vo?'Pasaje a vía oral':'Cabalgamiento'}</small><b>${x.t}</b></span></summary><div class="prepin">${trnBody(x)}</div></details>`).join('')}
 
 // ================= Bolos (adultos) =================
 // kg:[min,max] dosis por kg | fix:[min,max] dosis fija; u: unidad; max: tope total; how: cómo pasarlo
@@ -2161,6 +2202,7 @@ function alerts(){const A=[],ids=[...new Set(S.pumps.map(p=>p.id))],all=ids.conc
     A.push(['x',`<b>${[lowK?`K⁺ ${fmt(S.k,1)}`:'',lowMg?`Mg²⁺ ${fmt(S.mg,1)}`:'',lowCa?`Ca²⁺ ${fmt(S.ca,1)}`:''].filter(Boolean).join(', ')}</b>: corregí antes (K⁺ > 4, Mg²⁺ > 2, Ca²⁺ normal): alargan el QT.`]);
   if(S.ca<7.5&&S.pumps.some(p=>['nora','adre','dobu','dopa','milri','levo'].includes(p.id)))A.push(['c',`<b>Ca²⁺ ${fmt(S.ca,1)}</b>: la hipocalcemia baja la contractilidad y la respuesta a los vasopresores; pedí calcio iónico y corregilo.`]);
   globalIx().forEach(x=>A.push([x.k==='evi'?'x':'c',`<b>${x.n}</b>: ${x.s}.`]));
+  trnPair().filter(x=>!x.any).forEach(x=>A.push(['c',`<b>${x.t}</b>: ${x.s}.`]));
   pairs().forEach(([p,q2])=>{const x=PDM[pk(p.id,q2.id)];if(x&&x.k==='evi')A.push(['x',`<b>${byId(p.id).name} + ${byId(q2.id).name}</b>: ${x.s}.`])});
   const allI=[...new Set(S.pumps.map(p=>p.id)),...S.meds];for(let i=0;i<allI.length;i++)for(let j=i+1;j<allI.length;j++){if(!MEDI[allI[i]]&&!MEDI[allI[j]])continue;
     const x=PDM2[pk(allI[i],allI[j])];if(x&&x.k==='evi')A.push(['x',`<b>${nm(allI[i])} + ${nm(allI[j])}</b>: ${x.t}`])}
@@ -2334,6 +2376,7 @@ function renderIx(){const box=$('#ixBox');if(S.pumps.length<2&&!S.meds.length){b
   [...new Set(S.pumps.map(p=>p.id))].forEach(a=>S.meds.forEach(m=>{const x=PDM2[pk(a,m)];if(x)add(a,m,x)}));
   for(let i=0;i<S.meds.length;i++)for(let j=i+1;j<S.meds.length;j++){const x=PDM2[pk(S.meds[i],S.meds[j])];if(x)add(S.meds[i],S.meds[j],x)}
   if(fx.length)h+=`<h3 style="margin-top:4px">Entre drogas</h3><div class="ixr">${fx.map(({n,x})=>`<details><summary><b>${n}</b><span>${x.s}</span></summary><p>${x.t}</p></details>`).join('')}</div>`;
+  const tp=trnPair();if(tp.length)h+=`<h3 style="margin-top:4px">Cabalgamiento</h3><div class="ixr">${tp.map(x=>`<details><summary><b>${x.t}</b><span>${x.s}</span></summary>${trnBody(x)}</details>`).join('')}</div>`;
   box.hidden=!h;if(box._h!==h){box._h=h;box.innerHTML=h}}
 
 // ================= Hojas =================
@@ -2411,6 +2454,7 @@ function renderSheet(){if(bolIdx!=null){renderBolo();return}
       <div class="tick ${pct(effUmin(p))<12?'l':''}" style="left:${pct(effUmin(p))}%"><span>${fmt(effUmin(p),dd)}</span></div><div class="tick ${pct(mx)>88?'r':''}" style="left:${pct(mx)}%"><span>máx ${fmt(mx,dd)}</span></div><div class="mk" style="left:${pct(p.dose)}%"></div></div>
     ${timeLine(p)}${supplyLine(p)}<p class="hint">Habitual ${fmt(effUmin(p),dd)}–${fmt(Math.min(d.d.umax,mx),dd)} ${d.unit}${mx<d.d.max?' · máximo ajustado a función renal':''}${d.lab?` · según ${d.lab}`:''}${zone?`. ${zone[1]}.`:''}</p></div>
 `}
+  ${trnSheet(p)}
   ${nW?'':`
   <div class="blk"><div class="bh">Tabla · tocá una fila</div><table><thead><tr><th>${unitLbl(d)}</th>${d.wb?`<th>${d.perMin?d.num+'/min':d.num+'/h'}</th>`:''}<th>ml/h</th></tr></thead>
     <tbody>${d.quick.map(q=>`<tr class="q ${Math.abs(q-p.dose)<1e-6?'cur':''}" data-q="${q}"><td>${fmt(q,dd)}</td>${d.wb?`<td>${d.perMin?fmt(q*w,1):perHFmt(q*w)}</td>`:''}<td>${fmt(rate(p,q),1)}</td></tr>`).join('')}</tbody></table></div>`}
