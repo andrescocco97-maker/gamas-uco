@@ -706,6 +706,12 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 .zone{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--ok) 55%,transparent) 0 5px,color-mix(in srgb,var(--ok) 25%,transparent) 5px 10px)}
 .zone.lo{background:color-mix(in srgb,var(--warn) 35%,transparent)}
 .zone.hi{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--bad) 55%,transparent) 0 2px,color-mix(in srgb,var(--bad) 20%,transparent) 2px 6px)}
+
+.rbc{margin:10px 14px 0}.rbc .bar{position:relative;height:8px;border-radius:4px;background:var(--panel2);overflow:visible}
+.rbc .zone{position:absolute;top:0;bottom:0}.rbc .mk{position:absolute;top:-4px;width:3px;height:16px;margin-left:-1px;background:var(--fg);border-radius:2px;box-shadow:0 0 0 2px var(--bg)}
+.rbl{font-size:.72rem;color:var(--dim);margin-top:5px}
+.cpw>summary{cursor:pointer;margin-top:4px;padding:10px 0;font-size:.76rem;color:var(--dim);list-style:none}.cpw>summary::-webkit-details-marker{display:none}.cpw>summary::before{content:'▶';font-size:.6rem;margin-right:10px;display:inline-block;transition:transform .15s}.cpw[open]>summary::before{transform:rotate(90deg)}
+.cpw .copy{width:auto;min-height:40px;padding:8px 14px;font-size:.8rem;margin:4px 6px 4px 0;border-radius:var(--r2)}
 </style>
 </head>
 <body>
@@ -756,8 +762,8 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
   <div class="sum" id="sum" hidden></div>
   <section class="pumps" id="pumps" aria-label="Bombas"></section>
   <section class="card" id="ixBox" hidden aria-label="Vías e interacciones"></section>
-  <div id="copyBox" hidden><button type="button" class="copy" id="copyBtn">Copiar infusiones para la evolución</button><button type="button" class="copy" id="copyBtn2" style="margin-top:8px">Copiar indicaciones (ampollas, ml y ml/h)</button><div class="copied" id="copied" aria-live="polite"></div></div>
   <footer class="foot">
+  <details class="cpw" id="copyBox" hidden><summary>Copiar para la evolución</summary><button type="button" class="copy" id="copyBtn">Copiar infusiones</button><button type="button" class="copy" id="copyBtn2">Copiar indicaciones (ampollas, ml y ml/h)</button><div class="copied" id="copied" aria-live="polite"></div></details>
     Herramienta de apoyo: verificá contra la indicación y la bomba.
     <details><summary>Cómo calcula</summary><p>Peso: el real. Con IMC ≥ 30 cada droga usa el peso que corresponde y lo muestra en la bomba: ideal para esmolol, remifentanilo y bloqueantes en bomba; ajustado (ideal + 0,4 × exceso) para vasopresores, inotrópicos, nitroprusiato, heparina, amiodarona por kilo, sedantes, opioides e inductores; real para la succinilcolina (Erstad y Barletta, Crit Care 2020 y 2021). Con más de 100 kg pide la talla. Un hombre alto sin obesidad (IMC < 30) usa su peso real. Peso ideal: Devine. Clearance: Cockcroft-Gault con peso real (ajustado si IMC ≥ 30). VIS: Gaies 2010. NEE (dosis equivalente de noradrenalina, en gamas): NA + adrenalina + dopamina ÷ 100 + vasopresina (UI/min) × 2,5, según Goradia 2021; no hay una fórmula única de consenso. Vías: compatibilidad en Y según LSCCN v7 y ANMF; si los datos son dudosos se separan. QT: CredibleMeds (22/05/2025). Las preparaciones que guardás quedan solo en este celular.</p></details>
     <details><summary>Bibliografía</summary><ol id="biblio"></ol></details>
@@ -777,7 +783,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v40', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v41', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -848,7 +854,7 @@ const DRUGS = [
   notes:W=>['Inhibidor de PDE3: inotrópico y vasodilatador. Sirve si el paciente viene betabloqueado.',
    `Bolo opcional 50 mcg/kg en 10 min${W?` = ${fmt(50*W,0)} mcg`:''}. En general se omite por hipotensión.`]},
  {id:'levo',ob:'aj',g:'Inotrópicos',name:'Levosimendán',short:'Levo',unit:'mcg/kg/min',num:'mcg',perMin:true,wb:true,
-  amp:{q:12.5,u:'mg',ml:5,label:'amp 12,5 mg / 5 ml'},std:{n:1,vol:250},dils:['Dx5%'],onlyD:true,lad:[0.05,0.075,0.1,0.125,0.15,0.175,0.2],
+  amp:{q:12.5,u:'mg',ml:5,label:'amp 12,5 mg / 5 ml'},std:{n:1,vol:250},dils:['Dx5%'],onlyD:true,lad:[0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2],
   via:'Periférica aceptable.',keep:'Infusión de 24 h; se descarta al terminar.',
   d:{min:0.05,umin:0.05,umax:0.2,max:0.2,step:0.05,start:0.1},quick:[0.05,0.1,0.15,0.2],
   renal:c=>c<30?{msg:`con ClCr ${fmt(c,0)} ml/min no se recomienda (por debajo de 30).`,bad:true}:null,
@@ -2297,6 +2303,7 @@ function renderPumps(){const box=$('#pumps');
       <button type="button" class="mid" data-open="${p.uid}" aria-label="Abrir ${pName(p)}"></button>
       <label class="dose"><input class="in" data-role="dose" inputmode="decimal" autocomplete="off" aria-label="Dosis en ${unitLbl(d)}"><span class="lbl">${unitLbl(d)}</span></label>
     </div>
+    <div class="rbc" data-r="rb"></div>
     <div class="stp"><button type="button" data-step="-1" aria-label="Bajar dosis">−</button><button type="button" data-step="1" aria-label="Subir dosis">+</button></div>
     <div class="pm" data-r="pm"></div><div class="tit" data-r="tit"></div><div class="hito" data-r="hi"></div><div class="flags" data-r="fl"></div>
     <details class="pmx"><summary data-r="xs">Detalles</summary><div class="pmxb" data-r="xb"></div></details>
@@ -2309,9 +2316,13 @@ function warnParts(p){const fl=flagsOf(p.id),fx=fl.filter(f=>f.l==='x'),fc=fl.fi
     hi:t?`<div class="hl1">${t}</div>`:'',n:fx.length+(fc.length?1:0)+(t?1:0)}}
 function warnSig(W){const x=(W.fl.replace(/ open/g,'')+W.hi).replace(/<[^>]+>/g,'');let h=5381;for(let i=0;i<x.length;i++)h=((h<<5)+h+x.charCodeAt(i))|0;return (h>>>0).toString(36)}
 function ackPump(p){p.ak=warnSig(warnParts(p))}
+function rangeBar(p){const d=byId(p.id),mx=effMax(p),u0=effUmin(p),top=d.d.max*1.2,pc=v=>Math.max(0,Math.min(100,v/top*100)),dec=d.d.max<1?3:d.d.max<10?2:1,lf=v=>fmt(v,v<1?3:dec>2?2:1);
+  if(!(top>0)||!isFinite(mx)||!isFinite(u0))return '';
+  return `<div class="bar" aria-hidden="true"><div class="zone lo" style="left:0;width:${pc(u0)}%"></div><div class="zone" style="left:${pc(u0)}%;width:${pc(mx)-pc(u0)}%"></div><div class="zone hi" style="left:${pc(mx)}%;right:0"></div><u class="mk" style="left:${pc(p.dose)}%"></u></div><div class="rbl"><span>habitual ${lf(u0)}–${lf(mx)} ${unitLbl(d)}</span></div>`}
 function refreshPump(p,skip){const el=document.querySelector(`.pump[data-uid="${p.uid}"]`);if(!el)return;
   const d=byId(p.id),ri=el.querySelector('[data-role=rate]'),di=el.querySelector('[data-role=dose]');
   el.querySelector('[data-r=pr]').innerHTML=`<b>${fmt(p.n,2)} ${uWord(d,p.n)}</b> ${d.pure?'puro':'en '+fmt(vTot(p),0)+' ml de '+(DILTXT[dilOf(p)]||dilOf(p))} · ${concLabel(p)}`;
+  {const rb=el.querySelector('[data-r=rb]');if(rb)rb.innerHTML=needsW(p)?'':rangeBar(p)}
   const WP=warnParts(p),seen=!!p.ak&&p.ak===warnSig(WP);
   el.querySelector('[data-r=fl]').innerHTML=seen?'':WP.fl;el.querySelector('[data-r=hi]').innerHTML=seen?'':WP.hi;
   if(skip!=='dose')di.value=inFmt(p.dose,skip==='rate'?doseDec(d)+1:doseDec(d));
@@ -2377,7 +2388,7 @@ function refreshAll(skipUid,skip){S.pumps.forEach(p=>refreshPump(p,p.uid===skipU
 function sheetBusy(){const a=document.activeElement;return a&&$('#sheet').contains(a)&&a.tagName==='INPUT'}
 let restT=0;const DOSE0={};
 function mark0(p){if(DOSE0[p.uid]==null)DOSE0[p.uid]=p.dose}
-function softCheck(){S.pumps.forEach(p=>{const d0=DOSE0[p.uid];if(d0==null)return;delete DOSE0[p.uid];const d=byId(p.id);if(d0>0&&p.dose>=3*d0-1e-9&&!d.pure){const x=p.dose/d0;toast(`${d.name}: de ${fmt(d0,d0<1?3:1)} a ${fmt(p.dose,p.dose<1?3:1)} ${d.unit} (×${fmt(x,x<10?1:0)}). ¿Es lo que querías?`,()=>{p.dose=d0;p.nw=0;save();renderPumps();refreshAll()},8000)}})}
+function softCheck(){S.pumps.forEach(p=>{const d0=DOSE0[p.uid];if(d0==null)return;delete DOSE0[p.uid];const d=byId(p.id);if(d0>0&&p.dose>=3*d0-1e-9&&!d.pure){const x=p.dose/d0;toast(`${d.name}: de ${fmt(d0,d0<1?3:1)} a ${fmt(p.dose,p.dose<1?3:1)} ${d.unit} (×${fmt(x,x<10?1:0)}). ¿Es lo que querías?`,()=>{p.dose=d0;p.nw=0;save();renderPumps();refreshAll()},3500)}})}
 $('#pumps').addEventListener('input',e=>{const role=e.target.dataset.role;if(!role)return;const uid=+e.target.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);
   if(role==='rate')fitRate(e.target);const v=num(e.target.value);if(!(v>=0&&v<=1e5))return;ackPump(p);mark0(p);if(role==='dose')p.dose=v;else p.dose=doseFrom(p,v);p.nw=0;
   refreshPump(p,role);clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts();softCheck()},700)});
@@ -2390,7 +2401,7 @@ $('#pumps').addEventListener('click',e=>{
   const s=e.target.closest('[data-step]');if(s&&e.detail===0&&Date.now()-(+s.dataset.pd||0)>600)stepPump(s)});
 function nextDose(p,dir){const L=byId(p.id).lad,x=p.dose;
   if(dir>0){const v=L.find(v=>v>x+1e-9);if(v!=null)return v;const inc=L[L.length-1]-L[L.length-2];return +(x+inc).toFixed(4)}
-  for(let i=L.length-1;i>=0;i--)if(L[i]<x-1e-9)return L[i];return L[0]}
+  for(let i=L.length-1;i>=0;i--)if(L[i]<x-1e-9)return L[i];const inc=L[1]-L[0],y=+(x-inc).toFixed(4);return y>0?y:x}
 function stepPump(btn){const uid=+btn.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);ackPump(p);mark0(p);p.dose=nextDose(p,+btn.dataset.step);p.nw=0;refreshPump(p);
   clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts();softCheck()},400)}
 let holdT=null;
@@ -2469,7 +2480,6 @@ function howHTML(p,d){if(needsW(p))return '<div class="blk"><p class="hint">Carg
 function chgH(p){return p.id==='propo'?6:p.id==='atra'&&dilOf(p)==='Dx5%'?8:24}
 function supplyLine(p){const d=byId(p.id),hl0=hoursLeft(p),r=rate(p,p.dose);if(!isFinite(hl0)||!(r>0))return '';const cg=chgH(p),hl=Math.min(hl0,cg),sd=24/hl,amp=sd*p.n,uw=d.amp.vial?'frascos':'ampollas',st=p.stk>0?p.stk:NaN,al=st/p.n*hl,g=r/3;
   return `<div class="sup"><div>El sachet dura <b>${durLbl(hl0)}</b>${hl0>cg?` · se cambia cada <b>${cg} h</b>`:''} · en 24 h: <b>${fmt(sd,1)} sachets = ${fmt(Math.ceil(amp-1e-9),0)} ${uw}</b></div>
-   <div class="rconv">Quedan <input class="t0i" id="stkIn" inputmode="numeric" value="${isFinite(st)?st:''}" aria-label="${uw} que quedan"> ${uw} en el servicio${isFinite(al)?` → alcanzan para <b>${durLbl(al)}</b>${al<24?' <span class="s-bad">· no llega a 24 h</span>':''}`:''}</div>
    <div class="gt">Sin bomba: <b>${fmt(g,g<10?1:0)} gotas/min</b> con macrogotero (1 cada ${fmt(60/g,1)} s) · <b>${fmt(r,r<10?1:0)} microgotas/min</b> con microgotero</div></div>`}
 function timeLine(p){const T=tStat(p);if(!T)return '';const h=hrsOn(p);
   return `<p class="hint tline${T.over?' over':''}">Tope ${fmt(T.mx,0)} h: ${T.why}. ${isFinite(h)?`Lleva ${fmt(h,h<10?1:0)} h`:''} · empezó hace <input class="t0i" id="t0In" inputmode="decimal" value="${isFinite(h)?inFmt(Math.round(h*10)/10,1):''}" aria-label="Horas desde que empezó"> h</p>`}
@@ -2538,7 +2548,7 @@ function bindSheet(p,d){const pd2=document.querySelector('#sheet details.prep');
   $('#nMinus').onclick=()=>{const v=Number.isInteger(p.n)?p.n-1:Math.floor(p.n);if(v>=1){p.n=v;upd()}};
   $('#nPlus').onclick=()=>{const v=Number.isInteger(p.n)?p.n+1:Math.ceil(p.n);if(v<=30){p.n=v;upd()}};
   const as=$('#addSeg');if(as)as.onclick=e=>{const b=e.target.closest('button');if(!b)return;p.add=b.dataset.v==='1';S.addDef=p.add;upd()};
-  const vi=$('#volIn');vi.onchange=()=>{const v=num(vi.value);if(!(v>0&&v<=2000)){vi.value=inFmt(p.vol,1);return}if(![20,30,50,100,125,150,200,250,500,1000].includes(v)){const old=p.vol;toast(`Volumen ${fmt(v,0)} ml: no es una bolsa habitual. ¿Seguro?`,()=>{p.vol=old;if(d.pure)p.n=Math.round(old/p.ml*100)/100;save();renderPumps()},8000)}if(d.pure){p.n=Math.round(v/p.ml*100)/100;p.vol=v;save();renderPumps()}else{p.vol=v;upd()}};
+  const vi=$('#volIn');vi.onchange=()=>{const v=num(vi.value);if(!(v>0&&v<=2000)){vi.value=inFmt(p.vol,1);return}if(![20,30,50,100,125,150,200,250,500,1000].includes(v)){const old=p.vol;toast(`Volumen ${fmt(v,0)} ml: no es una bolsa habitual. ¿Seguro?`,()=>{p.vol=old;if(d.pure)p.n=Math.round(old/p.ml*100)/100;save();renderPumps()},3500)}if(d.pure){p.n=Math.round(v/p.ml*100)/100;p.vol=v;save();renderPumps()}else{p.vol=v;upd()}};
   document.querySelectorAll('#sheet [data-vol]').forEach(b=>b.onclick=()=>{p.vol=+b.dataset.vol;upd()});
   const ds=$('#dilSeg');if(ds)ds.onclick=e=>{const b=e.target.closest('button');if(!b)return;p.dil=b.dataset.v;upd()};
   const ps=$('#prepSeg');if(ps)ps.onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=b.dataset.v==='alt'?d.alt:stdOf(d);p.n=s.n;p.vol=s.vol;upd()};
