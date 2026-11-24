@@ -707,8 +707,8 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 .zone.lo{background:color-mix(in srgb,var(--warn) 35%,transparent)}
 .zone.hi{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--bad) 55%,transparent) 0 2px,color-mix(in srgb,var(--bad) 20%,transparent) 2px 6px)}
 
-.rbc{margin:10px 14px 0}.rbc .bar{position:relative;height:8px;border-radius:4px;background:var(--panel2);overflow:visible}
-.rbc .zone{position:absolute;top:0;bottom:0}.rbc .mk{position:absolute;top:-4px;width:3px;height:16px;margin-left:-1px;background:var(--fg);border-radius:2px;box-shadow:0 0 0 2px var(--bg)}
+.rbc{margin:10px 14px 0}.rbc .bar{position:relative;height:10px;border-radius:5px;margin-top:12px;background:var(--panel2);overflow:visible}
+.rbc .zone{position:absolute;top:0;bottom:0}.rbc .rmk{position:absolute;top:-6px;width:6px;height:22px;margin-left:-3px;background:#fff;border-radius:3px;box-shadow:0 0 0 2px var(--bg),0 0 10px rgba(255,255,255,.55);text-decoration:none}
 .rbl{font-size:.72rem;color:var(--dim);margin-top:5px}
 .cpw>summary{cursor:pointer;margin-top:4px;padding:10px 0;font-size:.76rem;color:var(--dim);list-style:none}.cpw>summary::-webkit-details-marker{display:none}.cpw>summary::before{content:'▶';font-size:.6rem;margin-right:10px;display:inline-block;transition:transform .15s}.cpw[open]>summary::before{transform:rotate(90deg)}
 .cpw .copy{width:auto;min-height:40px;padding:8px 14px;font-size:.8rem;margin:4px 6px 4px 0;border-radius:var(--r2)}
@@ -763,10 +763,10 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
   <section class="pumps" id="pumps" aria-label="Bombas"></section>
   <section class="card" id="ixBox" hidden aria-label="Vías e interacciones"></section>
   <footer class="foot">
-  <details class="cpw" id="copyBox" hidden><summary>Copiar para la evolución</summary><button type="button" class="copy" id="copyBtn">Copiar infusiones</button><button type="button" class="copy" id="copyBtn2">Copiar indicaciones (ampollas, ml y ml/h)</button><div class="copied" id="copied" aria-live="polite"></div></details>
     Herramienta de apoyo: verificá contra la indicación y la bomba.
     <details><summary>Cómo calcula</summary><p>Peso: el real. Con IMC ≥ 30 cada droga usa el peso que corresponde y lo muestra en la bomba: ideal para esmolol, remifentanilo y bloqueantes en bomba; ajustado (ideal + 0,4 × exceso) para vasopresores, inotrópicos, nitroprusiato, heparina, amiodarona por kilo, sedantes, opioides e inductores; real para la succinilcolina (Erstad y Barletta, Crit Care 2020 y 2021). Con más de 100 kg pide la talla. Un hombre alto sin obesidad (IMC < 30) usa su peso real. Peso ideal: Devine. Clearance: Cockcroft-Gault con peso real (ajustado si IMC ≥ 30). VIS: Gaies 2010. NEE (dosis equivalente de noradrenalina, en gamas): NA + adrenalina + dopamina ÷ 100 + vasopresina (UI/min) × 2,5, según Goradia 2021; no hay una fórmula única de consenso. Vías: compatibilidad en Y según LSCCN v7 y ANMF; si los datos son dudosos se separan. QT: CredibleMeds (22/05/2025). Las preparaciones que guardás quedan solo en este celular.</p></details>
     <details><summary>Bibliografía</summary><ol id="biblio"></ol></details>
+  <details class="cpw" id="copyBox" hidden><summary>Copiar para la evolución</summary><button type="button" class="copy" id="copyBtn">Copiar infusiones</button><button type="button" class="copy" id="copyBtn2">Copiar indicaciones (ampollas, ml y ml/h)</button><div class="copied" id="copied" aria-live="polite"></div></details>
   </footer>
 </div>
 
@@ -783,7 +783,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v41', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v42', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -2318,7 +2318,7 @@ function warnSig(W){const x=(W.fl.replace(/ open/g,'')+W.hi).replace(/<[^>]+>/g,
 function ackPump(p){p.ak=warnSig(warnParts(p))}
 function rangeBar(p){const d=byId(p.id),mx=effMax(p),u0=effUmin(p),top=d.d.max*1.2,pc=v=>Math.max(0,Math.min(100,v/top*100)),dec=d.d.max<1?3:d.d.max<10?2:1,lf=v=>fmt(v,v<1?3:dec>2?2:1);
   if(!(top>0)||!isFinite(mx)||!isFinite(u0))return '';
-  return `<div class="bar" aria-hidden="true"><div class="zone lo" style="left:0;width:${pc(u0)}%"></div><div class="zone" style="left:${pc(u0)}%;width:${pc(mx)-pc(u0)}%"></div><div class="zone hi" style="left:${pc(mx)}%;right:0"></div><u class="mk" style="left:${pc(p.dose)}%"></u></div><div class="rbl"><span>habitual ${lf(u0)}–${lf(mx)} ${unitLbl(d)}</span></div>`}
+  return `<div class="bar" aria-hidden="true"><div class="zone lo" style="left:0;width:${pc(u0)}%"></div><div class="zone" style="left:${pc(u0)}%;width:${pc(mx)-pc(u0)}%"></div><div class="zone hi" style="left:${pc(mx)}%;right:0"></div><u class="rmk" style="left:${pc(p.dose)}%"></u></div><div class="rbl"><span>habitual ${lf(u0)}–${lf(mx)} ${unitLbl(d)}</span></div>`}
 function refreshPump(p,skip){const el=document.querySelector(`.pump[data-uid="${p.uid}"]`);if(!el)return;
   const d=byId(p.id),ri=el.querySelector('[data-role=rate]'),di=el.querySelector('[data-role=dose]');
   el.querySelector('[data-r=pr]').innerHTML=`<b>${fmt(p.n,2)} ${uWord(d,p.n)}</b> ${d.pure?'puro':'en '+fmt(vTot(p),0)+' ml de '+(DILTXT[dilOf(p)]||dilOf(p))} · ${concLabel(p)}`;
