@@ -712,6 +712,20 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 .rbl{font-size:.72rem;color:var(--dim);margin-top:5px}
 .cpw>summary{cursor:pointer;margin-top:4px;padding:10px 0;font-size:.76rem;color:var(--dim);list-style:none}.cpw>summary::-webkit-details-marker{display:none}.cpw>summary::before{content:'▶';font-size:.6rem;margin-right:10px;display:inline-block;transition:transform .15s}.cpw[open]>summary::before{transform:rotate(90deg)}
 .cpw .copy{width:auto;min-height:40px;padding:8px 14px;font-size:.8rem;margin:4px 6px 4px 0;border-radius:var(--r2)}
+
+/* Vista de guardia */
+.topr{display:flex;gap:8px;align-items:center}.gdb{min-height:44px;font-size:.8rem;padding:0 12px}
+.gdl{display:none}
+body.gd .gdl{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 14px 0;font-size:.78rem;color:var(--dim)}
+.gdl b{color:var(--muted);font-weight:600}.gdbs{display:flex;gap:6px}
+.gdx{border:0;background:none;color:var(--muted);font:600 .78rem var(--font);min-height:44px;padding:0 8px;border-bottom:0;text-decoration:underline dotted}
+body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.gd .foot,body.gd .pump .rbc,body.gd .pump .stp,body.gd .pump .pm,body.gd .pump .tit,body.gd .pump .hito,body.gd .pump .flags,body.gd .pump .pmx,body.gd .hint-sw,body.gd .lab .pr{display:none!important}
+.gdsh{position:fixed;inset:0;z-index:60}.gdbg{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.gdp{position:absolute;left:0;right:0;bottom:0;background:var(--panel2);border-radius:20px 20px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom))}
+.gdp h4{font:700 .82rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}.gdp p{font-size:.82rem;color:var(--dim);margin:0 0 14px}
+.gdc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.gdc button{border:0;background:var(--panel);color:var(--fg);border-radius:var(--r2);min-height:44px;padding:0 16px;font:600 .95rem var(--font)}
+.gdt{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted);margin-bottom:14px}.gdt input{background:var(--panel);border:0;color:var(--fg);border-radius:var(--r2);min-height:44px;padding:0 12px;font:700 1.4rem var(--num)}
+.gdok{width:100%;border:0;background:var(--key);color:var(--bg);border-radius:var(--r1);min-height:52px;font:700 .85rem var(--font);letter-spacing:.08em;text-transform:uppercase}.gdh{margin-top:12px;font-size:.76rem;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -719,7 +733,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <div class="app">
   <header class="top">
     <div class="brand">Gamas <span>UCO</span></div>
-    <div id="newBox"><button type="button" class="ghost" id="newBtn">Nuevo paciente</button></div>
+    <div class="topr"><button type="button" class="ghost gdb" id="gdBtn" aria-pressed="false">Guardia</button><span id="newBox"><button type="button" class="ghost" id="newBtn">Nuevo paciente</button></span></div>
   </header>
   <div class="beds" id="beds" role="group" aria-label="Camas"></div>
 
@@ -783,7 +797,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v42', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v43', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -2037,7 +2051,7 @@ function numIn(k,v){if(typeof v!=='number'||!isFinite(v))return NaN;const R=LABR
 function cleanPrep(p,d){if(!p||typeof p!=='object')return null;const s=factoryOf(d),f=(x,hi,df)=>typeof x==='number'&&isFinite(x)&&x>0&&x<=hi?x:df;
   return {n:f(p.n,5000,s.n),vol:f(p.vol,2000,s.vol),q:f(p.q,1e6,s.q),ml:f(p.ml,1000,s.ml),dil:d.dils.includes(p.dil)?p.dil:d.dils[0],add:d.pure?false:p.add===true}}
 function cleanPump(p){const d=p&&typeof p==='object'?byId(p.id):null;if(!d)return null;const b=cleanPrep(p,d),g=(x,hi,df)=>typeof x==='number'&&isFinite(x)&&x>=0&&x<=hi?x:df;
-  return {uid:Number.isInteger(p.uid)&&p.uid>0&&p.uid<1e9?p.uid:0,id:d.id,...b,dose:g(p.dose,1e5,d.d.start),nw:g(p.nw,1e14,0),t0:g(p.t0,1e14,0),h:(Array.isArray(p.h)?p.h:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-300),stk:g(p.stk,999,0),ak:typeof p.ak==='string'?p.ak.slice(0,16):'',bo:(Array.isArray(p.bo)?p.bo:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-100)}}
+  return {uid:Number.isInteger(p.uid)&&p.uid>0&&p.uid<1e9?p.uid:0,id:d.id,...b,dose:g(p.dose,1e5,d.d.start),nw:g(p.nw,1e14,0),t0:g(p.t0,1e14,0),h:(Array.isArray(p.h)?p.h:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-300),stk:g(p.stk,999,0),sx:g(p.sx,1e14,0),sl:(Array.isArray(p.sl)?p.sl:[]).filter(x=>typeof x==='number'&&isFinite(x)&&x>0&&x<1e14).slice(0,4),ak:typeof p.ak==='string'?p.ak.slice(0,16):'',bo:(Array.isArray(p.bo)?p.bo:[]).filter(x=>Array.isArray(x)&&x.length===2&&x.every(v=>typeof v==='number'&&isFinite(v)&&v>=0)).slice(-100)}}
 function cleanPref(P){const o={};if(!P||typeof P!=='object'||Array.isArray(P))return o;
   Object.keys(P).forEach(id=>{const d=byId(id);if(!d)return;const p=cleanPrep(P[id],d);if(p)o[id]=p});return o}
 function deser(r0){const r=clean(r0)||{},o={...fresh(),...r};
@@ -2303,6 +2317,7 @@ function renderPumps(){const box=$('#pumps');
       <button type="button" class="mid" data-open="${p.uid}" aria-label="Abrir ${pName(p)}"></button>
       <label class="dose"><input class="in" data-role="dose" inputmode="decimal" autocomplete="off" aria-label="Dosis en ${unitLbl(d)}"><span class="lbl">${unitLbl(d)}</span></label>
     </div>
+    <div class="gdl" data-r="gd"></div>
     <div class="rbc" data-r="rb"></div>
     <div class="stp"><button type="button" data-step="-1" aria-label="Bajar dosis">−</button><button type="button" data-step="1" aria-label="Subir dosis">+</button></div>
     <div class="pm" data-r="pm"></div><div class="tit" data-r="tit"></div><div class="hito" data-r="hi"></div><div class="flags" data-r="fl"></div>
@@ -2323,6 +2338,7 @@ function refreshPump(p,skip){const el=document.querySelector(`.pump[data-uid="${
   const d=byId(p.id),ri=el.querySelector('[data-role=rate]'),di=el.querySelector('[data-role=dose]');
   el.querySelector('[data-r=pr]').innerHTML=`<b>${fmt(p.n,2)} ${uWord(d,p.n)}</b> ${d.pure?'puro':'en '+fmt(vTot(p),0)+' ml de '+(DILTXT[dilOf(p)]||dilOf(p))} · ${concLabel(p)}`;
   {const rb=el.querySelector('[data-r=rb]');if(rb)rb.innerHTML=needsW(p)?'':rangeBar(p)}
+  {const gl=el.querySelector('[data-r=gd]');if(gl)gl.innerHTML=sachetLine(p)}
   const WP=warnParts(p),seen=!!p.ak&&p.ak===warnSig(WP);
   el.querySelector('[data-r=fl]').innerHTML=seen?'':WP.fl;el.querySelector('[data-r=hi]').innerHTML=seen?'':WP.hi;
   if(skip!=='dose')di.value=inFmt(p.dose,skip==='rate'?doseDec(d)+1:doseDec(d));
@@ -2932,6 +2948,33 @@ $('#beds').addEventListener('click',e=>{const b=e.target.closest('[data-bed]');i
 function staleCheck(){if($('.stale:not(#hbanner)'))return;const age=(Date.now()-S.t)/3.6e6;if(S.pumps.length&&age>2){const n=document.createElement('div');n.className='stale';
   n.innerHTML=`<span>Datos de hace ${fmt(age,0)} h. ¿Es el mismo paciente?</span><button type="button" class="ghost" id="stOk">Sí</button><button type="button" class="ghost danger" id="stNew">Nuevo</button>`;
   $('.top').after(n);$('#stOk').onclick=()=>{n.remove();S.t=Date.now();save()};$('#stNew').onclick=()=>{n.remove();S=fresh();save();syncInputs();renderPt();renderSits();renderPumps()}}}
+
+// Vista de guardia: solo nombre, ml/h y gamas; por bomba, desde cuándo corre el sachet y cuándo conviene cambiarlo (estimado, sin alarmas).
+const GDKEY='gamasUCO.gd';
+function clk(ts){const d=new Date(ts),n=new Date(),p2=v=>String(v).padStart(2,'0'),h=p2(d.getHours())+':'+p2(d.getMinutes()),dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);
+  return dd===0?h:dd===1?'mañana '+h:dd===-1?'ayer '+h:`${p2(d.getDate())}/${p2(d.getMonth()+1)} ${h}`}
+function sachetLine(p){if(!(p.sx>0))return `<span>Sin hora de inicio</span><button type="button" class="gdx" data-sx="${p.uid}">Poner hora</button>`;
+  const hl=hoursLeft(p),cg=chgH(p),h=isFinite(hl)?Math.min(hl,cg):cg;
+  return `<span>Desde <b>${clk(p.sx)}</b> · cambio ≈ <b>${clk(p.sx+h*3.6e6)}</b></span><span class="gdbs"><button type="button" class="gdx" data-sx="${p.uid}">Hora</button><button type="button" class="gdx" data-sxnow="${p.uid}">Cambié</button></span>`}
+function setSx(p,ts){p.sx=ts;p.sl=[ts,...(p.sl||[]).filter(x=>Math.abs(x-ts)>6e4)].slice(0,4);save();renderPumps()}
+function openSx(uid){const p=S.pumps.find(x=>x.uid===uid);if(!p)return;const d=byId(p.id);closeSx();
+  const o=document.createElement('div');o.id='gdSheet';o.className='gdsh';
+  const hm=ts=>{const x=new Date(ts),p2=v=>String(v).padStart(2,'0');return p2(x.getHours())+':'+p2(x.getMinutes())};
+  o.innerHTML=`<div class="gdbg"></div><div class="gdp" role="dialog" aria-label="Hora de inicio del sachet"><h4>${esc(d.name)} · hora de inicio</h4><p>Solo para estimar cuándo conviene cambiar el sachet. No genera alarmas.</p>
+   <div class="gdc">${[['Ahora',0],['Hace 1 h',1],['Hace 2 h',2],['Hace 4 h',4]].map(([l,h])=>`<button type="button" data-ago="${h}">${l}</button>`).join('')}</div>
+   <label class="gdt">Otra hora <input type="time" id="gdTime" value="${hm(p.sx>0?p.sx:Date.now())}"></label>
+   <button type="button" class="gdok" id="gdOk">Guardar</button>
+   ${(p.sl||[]).length?`<div class="gdh">Cambios anteriores: ${p.sl.map(clk).join(' · ')}</div>`:''}</div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{if(e.target.classList.contains('gdbg')){closeSx();return}
+    const a=e.target.closest('[data-ago]');if(a){setSx(p,Date.now()-(+a.dataset.ago)*3.6e6);closeSx();return}
+    if(e.target.id==='gdOk'){const v=$('#gdTime').value.split(':'),n=new Date();if(v.length===2&&v[0]!==''){n.setHours(+v[0],+v[1],0,0);if(n.getTime()>Date.now()+6e4)n.setDate(n.getDate()-1);setSx(p,n.getTime())}closeSx()}})}
+function closeSx(){const o=$('#gdSheet');if(o)o.remove()}
+$('#pumps').addEventListener('click',e=>{const a=e.target.closest('[data-sx]');if(a){openSx(+a.dataset.sx);return}
+  const n=e.target.closest('[data-sxnow]');if(n){const p=S.pumps.find(x=>x.uid===+n.dataset.sxnow);if(p)setSx(p,Date.now())}});
+function setGd(on){document.body.classList.toggle('gd',on);const b=$('#gdBtn');b.setAttribute('aria-pressed',on);b.textContent=on?'Completa':'Guardia';try{localStorage.setItem(GDKEY,on?'1':'0')}catch(e){}}
+$('#gdBtn').addEventListener('click',()=>setGd(!document.body.classList.contains('gd')));
+try{if(localStorage.getItem(GDKEY)==='1')setGd(true)}catch(e){}
 autoPt();staleCheck();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
   const now=Date.now();let ch=false;Object.keys(BEDS.list).forEach(id=>{if(id!==BEDS.cur&&!(now-BEDS.list[id].t<TTL)){delete BEDS.list[id];ch=true}});if(ch){saveBeds();renderBeds()}
