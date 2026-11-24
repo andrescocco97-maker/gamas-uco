@@ -692,6 +692,20 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 .cb[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 16%,var(--panel2))}.cb[aria-pressed="true"]::before{content:'✓';display:grid;place-items:center;font-size:.8rem;font-weight:800;background:var(--accent);color:var(--bg);box-shadow:none}
 .cres{margin:12px 14px 14px;padding:10px 12px;border-radius:var(--r3);background:var(--panel2);font-size:.88rem;line-height:1.45}.cres.ok{box-shadow:inset 3px 0 0 var(--ok)}.cres.warn{box-shadow:inset 3px 0 0 var(--warn)}.cres.bad{box-shadow:inset 3px 0 0 var(--bad)}
 .cres .cm{color:var(--dim)}.tapb{min-height:64px;font-size:1.05rem;margin:4px 0 0}.cres .link{padding:6px 0 0;min-height:0}.mres span{font-size:.76rem;color:var(--dim)}
+
+/* Rediseño 2026.11.24: tira de paciente, sigla por droga, botones grandes, rango apto daltonismo */
+.pbar{display:none!important}.sum{flex-wrap:nowrap}.sum .stat{flex:1 1 0;min-width:0}
+.ptw{margin:0}.ptw>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:48px;padding:10px 14px;background:var(--panel);border-radius:var(--r2);font-size:.95rem;margin:8px 0}
+.ptw>summary::-webkit-details-marker{display:none}.ptw .pts{flex:1;min-width:0;color:var(--muted)}.ptw .pts b{color:var(--fg);font-weight:700}.ptw .sp{color:var(--dim)}.ptw .need{color:var(--warn);font-style:normal;font-weight:600}
+.ptw .chv::after{content:'▾';color:var(--dim);font-size:1.1rem}.ptw[open] .chv::after{content:'▴'}
+.ptw[open]>summary{margin-bottom:4px}
+.lab .ab{display:flex;align-items:center;gap:8px}.sg{font:800 .68rem/1 var(--font);font-style:normal;letter-spacing:.05em;background:var(--cls);color:var(--bg);border-radius:6px;padding:4px 6px;text-transform:none}
+.lab .pr{font-size:.82rem;color:var(--muted)}.lab .pr b{color:var(--fg);font-weight:700}
+.stp button,.stp button{min-height:52px!important}
+.sum .stat{padding:6px 8px}.sum .stat b{font-size:1.05rem}.sum .stat span{font-size:.7rem}
+.zone{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--ok) 55%,transparent) 0 5px,color-mix(in srgb,var(--ok) 25%,transparent) 5px 10px)}
+.zone.lo{background:color-mix(in srgb,var(--warn) 35%,transparent)}
+.zone.hi{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--bad) 55%,transparent) 0 2px,color-mix(in srgb,var(--bad) 20%,transparent) 2px 6px)}
 </style>
 </head>
 <body>
@@ -703,6 +717,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
   </header>
   <div class="beds" id="beds" role="group" aria-label="Camas"></div>
 
+  <details class="ptw" id="ptW"><summary id="ptSum" aria-label="Datos del paciente"></summary>
   <section class="pt" aria-label="Paciente">
     <div class="row r3">
       <label class="fld"><span>Peso kg</span><input class="in" id="peso" inputmode="decimal" autocomplete="off" placeholder="—"></label>
@@ -729,7 +744,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
         <label class="fld"><span>Ca²⁺ total</span><input class="in" id="caa" data-lab="ca" inputmode="decimal" autocomplete="off" placeholder="mg/dl"></label>
       </div><div class="hint" id="pamOut" style="margin-top:6px"></div></details>
     <div class="ptinfo" id="ptInfo"></div>
-  </section>
+  </section></details>
 
   <button type="button" class="sitchip" id="sitChip" hidden></button>
   <div id="sitHome" hidden><details class="sitbox" id="sitBox" open><summary><span class="st1">Situación clínica</span><span id="sitSum"></span></summary>
@@ -762,7 +777,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v39', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v40', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -2052,7 +2067,7 @@ function switchBed(id){id=String(id).trim();if(!id||!BEDID.test(id))return;
   if(id!==BEDS.cur){if(isEmptyPt(S))delete BEDS.list[BEDS.cur];else BEDS.list[BEDS.cur]=ser(S);BEDS.cur=id;useBed(BEDS.list[id]);saveBeds()}
   rerenderAll();if(id!==undefined)staleCheck()}
 function addBed(id){const ids=bedIds();if(id==null||String(id).trim()===''){let n=1;while(ids.includes(String(n)))n++;id=n}switchBed(id);return String(id)}
-function rerenderAll(){closeSheet();const st=$('.stale');if(st)st.remove();
+function rerenderAll(){closeSheet();autoPt();const st=$('.stale');if(st)st.remove();
   $('#newBox').innerHTML='<button type="button" class="ghost" id="newBtn">Nuevo paciente</button>';
   syncInputs();renderPt();renderSits();renderPumps();refreshAll();renderEvoLink();renderBeds()}
 function renderBeds(){const box=$('#beds');if(!box)return;const ids=bedIds();
@@ -2190,7 +2205,9 @@ function syncInputs(){
   $('#edad').value=isFinite(S.edad)?inFmt(S.edad,0):'';$('#creat').value=isFinite(S.creat)?inFmt(S.creat,2):'';
   $('#kk').value=isFinite(S.k)?inFmt(S.k,1):'';$('#mgg').value=isFinite(S.mg)?inFmt(S.mg,1):'';$('#caa').value=isFinite(S.ca)?inFmt(S.ca,1):'';
   ['fc','tas','tad','plaq','spo2','fr','fio2'].forEach(k=>$('#'+k).value=isFinite(S[k])?inFmt(S[k],0):'');$('#moreBox').open=false}
-function renderPt(){renderBar();const ms=[isFinite(S.fc)?`FC ${fmt(S.fc,0)}`:'',isFinite(S.tas)?(isFinite(S.tad)?`TA ${fmt(S.tas,0)}/${fmt(S.tad,0)}`:`TAS ${fmt(S.tas,0)}`):'',isFinite(pamOf())?`PAM ${fmt(pamOf(),0)}`:'',isFinite(S.plaq)?`Plaq ${fmt(S.plaq,0)}.000`:'',isFinite(S.mg)?`Mg ${fmt(S.mg,1)}`:'',isFinite(S.ca)?`Ca ${fmt(S.ca,1)}`:'',isFinite(S.spo2)?`SpO₂ ${fmt(S.spo2,0)}%`:'',isFinite(S.fr)?`FR ${fmt(S.fr,0)}`:'',isFinite(S.fio2)?`FiO₂ ${fmt(S.fio2,0)}%`:''].filter(Boolean);
+function ptStrip(){const sm=$('#ptSum');if(!sm)return;const c=crcl(),b=[S.nom?`<b>${esc(S.nom)}</b>`:'',isFinite(S.peso)?`${fmt(S.peso,0)} kg`:'<i class="need">cargá el peso</i>',isFinite(S.talla)?`${fmt(S.talla,0)} cm`:'',isFinite(S.edad)?`${fmt(S.edad,0)} a`:'',isFinite(c)?`ClCr ${fmt(c,0)}`:''].filter(Boolean);sm.innerHTML=`<span class="pts">${b.join(' <span class="sp">·</span> ')}</span><span class="chv" aria-hidden="true"></span>`}
+function autoPt(){const w=$('#ptW');if(w)w.open=!isFinite(S.peso)}
+function renderPt(){renderBar();ptStrip();const ms=[isFinite(S.fc)?`FC ${fmt(S.fc,0)}`:'',isFinite(S.tas)?(isFinite(S.tad)?`TA ${fmt(S.tas,0)}/${fmt(S.tad,0)}`:`TAS ${fmt(S.tas,0)}`):'',isFinite(pamOf())?`PAM ${fmt(pamOf(),0)}`:'',isFinite(S.plaq)?`Plaq ${fmt(S.plaq,0)}.000`:'',isFinite(S.mg)?`Mg ${fmt(S.mg,1)}`:'',isFinite(S.ca)?`Ca ${fmt(S.ca,1)}`:'',isFinite(S.spo2)?`SpO₂ ${fmt(S.spo2,0)}%`:'',isFinite(S.fr)?`FR ${fmt(S.fr,0)}`:'',isFinite(S.fio2)?`FiO₂ ${fmt(S.fio2,0)}%`:''].filter(Boolean);
   const po=$('#pamOut');if(po)po.innerHTML=isFinite(pamOf())?`PAM <b>${fmt(pamOf(),0)}</b> mmHg`:'';$('#moreSum').innerHTML=`<span class="mst"><b>Signos vitales y otros labos</b><span>${ms.length?ms.join(' · '):'FC, TA, SpO₂, FR, FiO₂, plaquetas, Mg²⁺, Ca²⁺'}</span></span>`;if(typeof renderSits==='function'&&$('#sits').children.length){const ak=JSON.stringify(autoConds());if(ak!==renderPt._ak){renderPt._ak=ak;renderSits()}}
   document.querySelectorAll('#sexSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.sex));
   const b=bmi(),c=crcl(),out=[];
@@ -2274,7 +2291,7 @@ function renderPumps(){const box=$('#pumps');
   if(!S.pumps.length){box.innerHTML=`<div class="empty"><b>Sin bombas</b><span>Tocá una de las más usadas o el botón <b>+&nbsp;Droga</b>.</span>
     <div class="qk">${freqList().map(id=>`<button type="button" data-add="${id}" style="${clsVar(id)}"><i class="dot"></i>${byId(id).name}</button>`).join('')}</div></div>`}
   else box.innerHTML=S.pumps.map(p=>{const d=byId(p.id);return `<article class="pump" data-uid="${p.uid}" style="${clsVar(p.id)}">
-    <button type="button" class="lab" data-open="${p.uid}" aria-label="Detalle de ${pName(p)}"><span class="ab">${pName(p)}</span><span class="pr" data-r="pr"></span><span class="go" aria-hidden="true">›</span></button>
+    <button type="button" class="lab" data-open="${p.uid}" aria-label="Detalle de ${pName(p)}"><span class="ab"><i class="sg">${esc(d.short||d.name.slice(0,3))}</i>${pName(p)}</span><span class="pr" data-r="pr"></span><span class="go" aria-hidden="true">›</span></button>
     <div class="pb">
       <label class="disp"><input class="in" data-role="rate" inputmode="decimal" autocomplete="off" aria-label="ml/h"><span class="lbl">ml/h</span></label>
       <button type="button" class="mid" data-open="${p.uid}" aria-label="Abrir ${pName(p)}"></button>
@@ -2294,7 +2311,7 @@ function warnSig(W){const x=(W.fl.replace(/ open/g,'')+W.hi).replace(/<[^>]+>/g,
 function ackPump(p){p.ak=warnSig(warnParts(p))}
 function refreshPump(p,skip){const el=document.querySelector(`.pump[data-uid="${p.uid}"]`);if(!el)return;
   const d=byId(p.id),ri=el.querySelector('[data-role=rate]'),di=el.querySelector('[data-role=dose]');
-  el.querySelector('[data-r=pr]').innerHTML=`${prepShort(p)} ${dilTxt(p)} · ${concLabel(p)}`;
+  el.querySelector('[data-r=pr]').innerHTML=`<b>${fmt(p.n,2)} ${uWord(d,p.n)}</b> ${d.pure?'puro':'en '+fmt(vTot(p),0)+' ml de '+(DILTXT[dilOf(p)]||dilOf(p))} · ${concLabel(p)}`;
   const WP=warnParts(p),seen=!!p.ak&&p.ak===warnSig(WP);
   el.querySelector('[data-r=fl]').innerHTML=seen?'':WP.fl;el.querySelector('[data-r=hi]').innerHTML=seen?'':WP.hi;
   if(skip!=='dose')di.value=inFmt(p.dose,skip==='rate'?doseDec(d)+1:doseDec(d));
@@ -2396,8 +2413,8 @@ const NEEF={nora:1,adre:1,dopa:0.01,vaso:2.5};
 function nee(){let v=0,any=false;for(const p of S.pumps){const f=NEEF[p.id];if(f==null||needsW(p))continue;v+=f*p.dose;any=true}return any?v:NaN}
 function renderSummary(){const box=$('#sum');if(!S.pumps.length){box.hidden=true;return}
   const out=[],v=vis(),st=(n,l,href)=>`<${href?'a href="'+href+'"':'div'} class="stat"><b>${n}</b><span>${l}</span></${href?'a':'div'}>`;
-  if(isFinite(v))out.push(st(fmt(v,0),'VIS (puntaje vasoactivo)'));
-  const ne=nee();if(isFinite(ne))out.push(st(fmt(ne,2),'gamas de NA equivalentes'));
+  if(isFinite(v))out.push(st(fmt(v,0),'VIS'));
+  const ne=nee();if(isFinite(ne))out.push(st(fmt(ne,2),'gamas NEE'));
   const tot=S.pumps.reduce((s,p)=>{const r=needsW(p)?0:rate(p,p.dose);return s+(isFinite(r)?r:0)},0);
   const sv=liqSave();out.push(st(fmt(tot*24,0),S.liq==='neg'&&sv>=1?`ml/día · −${fmt(sv,0)} concentrando`:'ml/día'));
   let f=null;S.pumps.forEach(p=>{if(needsW(p))return;const h=hoursLeft(p);if(isFinite(h)&&(!f||h<f.h))f={p,h}});
@@ -2905,7 +2922,7 @@ $('#beds').addEventListener('click',e=>{const b=e.target.closest('[data-bed]');i
 function staleCheck(){if($('.stale:not(#hbanner)'))return;const age=(Date.now()-S.t)/3.6e6;if(S.pumps.length&&age>2){const n=document.createElement('div');n.className='stale';
   n.innerHTML=`<span>Datos de hace ${fmt(age,0)} h. ¿Es el mismo paciente?</span><button type="button" class="ghost" id="stOk">Sí</button><button type="button" class="ghost danger" id="stNew">Nuevo</button>`;
   $('.top').after(n);$('#stOk').onclick=()=>{n.remove();S.t=Date.now();save()};$('#stNew').onclick=()=>{n.remove();S=fresh();save();syncInputs();renderPt();renderSits();renderPumps()}}}
-staleCheck();
+autoPt();staleCheck();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
   const now=Date.now();let ch=false;Object.keys(BEDS.list).forEach(id=>{if(id!==BEDS.cur&&!(now-BEDS.list[id].t<TTL)){delete BEDS.list[id];ch=true}});if(ch){saveBeds();renderBeds()}
   staleCheck()});
