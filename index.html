@@ -740,7 +740,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
   <div class="sum" id="sum" hidden></div>
   <section class="pumps" id="pumps" aria-label="Bombas"></section>
   <section class="card" id="ixBox" hidden aria-label="Vías e interacciones"></section>
-  <div id="copyBox" hidden><button type="button" class="copy" id="copyBtn">Copiar infusiones para la evolución</button><div class="copied" id="copied" aria-live="polite"></div></div>
+  <div id="copyBox" hidden><button type="button" class="copy" id="copyBtn">Copiar infusiones para la evolución</button><button type="button" class="copy" id="copyBtn2" style="margin-top:8px">Copiar indicaciones (ampollas, ml y ml/h)</button><div class="copied" id="copied" aria-live="polite"></div></div>
   <footer class="foot">
     Herramienta de apoyo: verificá contra la indicación y la bomba.
     <details><summary>Cómo calcula</summary><p>Peso: el real. Con IMC ≥ 30 cada droga usa el peso que corresponde y lo muestra en la bomba: ideal para esmolol, remifentanilo y bloqueantes en bomba; ajustado (ideal + 0,4 × exceso) para vasopresores, inotrópicos, nitroprusiato, heparina, amiodarona por kilo, sedantes, opioides e inductores; real para la succinilcolina (Erstad y Barletta, Crit Care 2020 y 2021). Con más de 100 kg pide la talla. Un hombre alto sin obesidad (IMC < 30) usa su peso real. Peso ideal: Devine. Clearance: Cockcroft-Gault con peso real (ajustado si IMC ≥ 30). VIS: Gaies 2010. NEE (dosis equivalente de noradrenalina, en gamas): NA + adrenalina + dopamina ÷ 100 + vasopresina (UI/min) × 2,5, según Goradia 2021; no hay una fórmula única de consenso. Vías: compatibilidad en Y según LSCCN v7 y ANMF; si los datos son dudosos se separan. QT: CredibleMeds (22/05/2025). Las preparaciones que guardás quedan solo en este celular.</p></details>
@@ -761,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v35', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v36', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -2866,6 +2866,15 @@ function openEstado(){openUid=null;bolIdx=null;cadOpen=false;
   arm('dgWipe',false);arm('dgWipeAll',true);showSheet()}
 
 // ================= Copiar =================
+const DILTXT={'Dx5%':'dextrosa 5%','SF':'solución fisiológica 0.9%'};
+function copyOut(txt){const done=()=>{$('#copied').textContent='Copiado. Pegalo en la evolución.'};
+  const fb=()=>{$('#copied').innerHTML='Seleccioná y copiá:<textarea class="cp" rows="5" readonly></textarea>';const t=document.querySelector('.cp');t.value=txt;t.focus();t.select()};
+  try{navigator.clipboard.writeText(txt).then(done,fb)}catch(e){fb()}}
+function indicLine(p){const d=byId(p.id),n=fmt(p.n,2),uw=uWord(d,p.n),dl=dilOf(p),v=fmt(vTot(p),0);
+  const prep=d.pure?`${n} ${uw} puro, ${v} ml`:`${n} ${uw} en ${v} ml de ${DILTXT[dl]||dl}`;
+  return `${pName(p)} (${prep})\t${fmt(rate(p,p.dose),1)} ml/h\tBIC\tEV`}
+$('#copyBtn2').addEventListener('click',()=>{if(!S.pumps.length)return;
+  copyOut(S.pumps.filter(p=>!needsW(p)).map(indicLine).join('\n'))});
 $('#copyBtn').addEventListener('click',()=>{if(!S.pumps.length)return;
   const lines2=S.pumps.filter(p=>!needsW(p)).map(p=>{const d=byId(p.id),dd=doseDec(d);
     return `${d.name} ${fmt(p.dose,Math.max(dd,2))} ${unitLbl(d)} (${fmt(rate(p,p.dose),1)} ml/h)`});
@@ -2958,11 +2967,11 @@ CV.fa.t='FA / aleteo';CV.tv.t='TV';
 $('#sheet').addEventListener('click',e=>{if(e.target.closest('[data-cad]'))openCAD()});
 // ================= Deslizar para quitar (con deshacer) =================
 (function(){let st=null,toastT=0;
-  function toast(msg,undo){let t=document.querySelector('.toast');if(t)t.remove();clearTimeout(toastT);
+  function toast(msg,undo,ms){let t=document.querySelector('.toast');if(t)t.remove();clearTimeout(toastT);
     t=document.createElement('div');t.className='toast';t.setAttribute('role','status');{const sp=document.createElement('span');sp.textContent=msg;const bt=document.createElement('button');bt.type='button';bt.textContent='Deshacer';t.append(sp,bt)}
-    document.body.appendChild(t);t.querySelector('button').onclick=()=>{t.remove();undo()};toastT=setTimeout(()=>t.remove(),5000)}
-  function remove(uid){lsSet('gamasUCO.sw','1');const i=S.pumps.findIndex(p=>p.uid===uid);if(i<0)return;const p=S.pumps[i];S.pumps.splice(i,1);save();renderPumps();
-    toast(`${byId(p.id).name} quitada`,()=>{S.pumps.splice(Math.min(i,S.pumps.length),0,p);save();renderPumps()})}
+    document.body.appendChild(t);t.querySelector('button').onclick=()=>{t.remove();undo()};toastT=setTimeout(()=>t.remove(),ms||5000)}
+  function remove(uid){lsSet('gamasUCO.sw','1');const i=S.pumps.findIndex(p=>p.uid===uid);if(i<0)return;const p=S.pumps[i];const swap=OFF[p.id]&&trnPair().some(x=>x.a===p.id||x.any);S.pumps.splice(i,1);save();renderPumps();
+    toast(`${byId(p.id).name} quitada${swap?'. '+OFF[p.id]:''}`,()=>{S.pumps.splice(Math.min(i,S.pumps.length),0,p);save();renderPumps()},swap?9000:0)}
   window.removePump=remove;const box=$('#pumps');
   box.addEventListener('pointerdown',e=>{const el=e.target.closest('.pump');if(!el||e.target.closest('input:not([readonly]),.stp button')||e.button>0)return;
     st={el,x:e.clientX,y:e.clientY,dx:0,on:false,id:e.pointerId}});
