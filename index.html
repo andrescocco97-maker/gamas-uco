@@ -761,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v36', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v37', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -1407,18 +1407,18 @@ const PDM2={};PD.forEach(x=>{const key=pk(x.a,x.b);if(!PDM2[key])PDM2[key]=x});
 // Tipos: pair = las dos bombas están corriendo (a viene antes que b, salvo any:true); vo = pasaje de una bomba a vía oral (se ve siempre en esa bomba).
 // st = pasos en orden. ev = qué tan firme es la base: 'ft' ficha técnica, 'ex' consenso o práctica de expertos, 'ob' observacional o metaanálisis, 'ec' ensayo extrapolado.
 const TRN=[
- {a:'milri',b:'levo',t:'Milrinona → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán no se recomienda por debajo de 30; la milrinona va con dosis ajustada.</li>`:''},s:'no hace falta cortar antes; vigilá la TA',ev:'ex',
-  st:['Arrancá el levosimendán <b>sin carga</b> y dejá la milrinona corriendo.','Juntas suman vasodilatación: controlá la TA a los 15–30 min y cada hora las primeras horas.','Si la TA aguanta, bajá la milrinona a la mitad y cortala en 1–2 h (vida media ≈ 2–3 h, más larga con ClCr bajo).','Si cae la TA, cortá primero la <b>milrinona</b>: se va en horas. El levosimendán no se apaga, su metabolito activo dura unos 7–10 días.'],
-  src:'Ningún ensayo compara esquemas de superposición; es práctica de expertos. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005 · Bouchez S, et al. Cardiovasc Drugs Ther. 2018;32(6):617-24. doi:10.1007/s10557-018-6838-2'},
- {a:'dobu',b:'levo',t:'Dobutamina → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán no se recomienda por debajo de 30; la milrinona va con dosis ajustada.</li>`:''},s:'bajá la dobutamina de a poco; el levo tarda en hacer efecto',ev:'ex',
-  st:['Arrancá el levosimendán <b>sin carga</b> con la dobutamina corriendo.','Bajá la dobutamina de a 2,5 mcg/kg/min cada 30–60 min mientras la TA, la diuresis y el lactato se sostengan.','Si empeora al bajar, volvé un escalón y esperá: el efecto pleno del levosimendán llega horas después.'],
+ {a:'milri',b:'levo',t:'Milrinona → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán está contraindicado por debajo de 30 (ficha); la milrinona va con dosis ajustada.</li>`:''},s:'no hace falta cortar antes; vigilá la TA',ev:'ex',
+  st:['Arrancá el levosimendán <b>sin carga</b> y dejá la milrinona corriendo (la ficha prevé carga de 6–12 mcg/kg; omitirla es práctica de expertos por la hipotensión).','<b>No superpongas</b> si la PAS es menor a 90–100 mmHg o la noradrenalina viene en ascenso: la ficha contraindica el levosimendán con hipotensión grave.','Juntas suman vasodilatación: controlá la TA a los 15–30 min y cada hora las primeras horas.','Si la TA aguanta, bajá la milrinona a la mitad y cortala en 1–2 h (vida media ≈ 2–3 h, más larga con ClCr bajo).','Si cae la TA, cortá primero la <b>milrinona</b>: se va en horas. El levosimendán no se apaga, su metabolito activo dura unos 7–10 días.'],
+  src:'Ningún ensayo compara esquemas de superposición; es práctica de expertos y las pautas de "mitad y cortar en 1–2 h" no tienen fuente. La ficha contraindica además taquicardia con hipotensión grave, obstrucción mecánica, torsades previa y falla hepática grave. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005 · Bouchez S, et al. Cardiovasc Drugs Ther. 2018;32(6):617-24. doi:10.1007/s10557-018-6838-2'},
+ {a:'dobu',b:'levo',t:'Dobutamina → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán está contraindicado por debajo de 30 (ficha).</li>`:''},s:'bajá la dobutamina de a poco; el levo tarda en hacer efecto',ev:'ex',
+  st:['Arrancá el levosimendán <b>sin carga</b> con la dobutamina corriendo (la ficha prevé carga; omitirla es práctica de expertos).','Bajá la dobutamina de a 2,5 mcg/kg/min cada 30–60 min mientras la TA, la diuresis y el lactato se sostengan.','Si empeora al bajar, volvé un escalón y esperá: el efecto pleno del levosimendán llega horas después.'],
   src:'Práctica de expertos, sin ensayo sobre el esquema de retiro. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005'},
  {a:'dobu',b:'milri',t:'Dobutamina → milrinona',s:'no cortes la dobutamina rápido: la milrinona tarda horas',ev:'ex',
-  st:['Arrancá la milrinona <b>sin bolo</b> (hipotensión) con la dobutamina corriendo.','La milrinona tarda horas en llegar a su efecto pleno: bajá la dobutamina de a 2,5 cada 30–60 min, no de golpe.','Controlá TA, FC y arritmias: las dos juntas dan más taquiarritmias.'],
+  st:['Arrancá la milrinona <b>sin bolo</b> con la dobutamina corriendo (la ficha indica 50 mcg/kg en 10 min; omitirlo es práctica por la hipotensión).','La milrinona tarda horas en llegar a su efecto pleno: bajá la dobutamina de a 2,5 cada 30–60 min, no de golpe.','Controlá TA, FC y arritmias: las dos juntas dan más taquiarritmias.'],
   src:'Práctica de expertos. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005'},
  {a:'nora',b:'vaso',any:true,t:'Destete: noradrenalina y vasopresina',s:'al destetar, sacá primero la noradrenalina',ev:'ob',
-  st:['Bajá y cortá primero la <b>noradrenalina</b>; dejá la vasopresina para el final.','Con la noradrenalina apagada y la PAM estable, cortá la vasopresina.','Controlá la PAM de cerca las primeras horas: el rebote de hipotensión es el riesgo.'],
-  src:'Metaanálisis de estudios casi todos retrospectivos, en shock séptico: menos hipotensión si se saca antes la noradrenalina, sin diferencia de mortalidad; un estudio reciente no halló diferencias. En shock cardiogénico es extrapolación. Metaanálisis en Shock 2020. doi:10.1097/SHK.0000000000001345 · Revisión con datos individuales en Pharmacotherapy 2019. doi:10.1002/phar.2265'},
+  st:['Bajá y cortá primero la <b>noradrenalina</b>; dejá la vasopresina para el final.','Con la noradrenalina apagada y la PAM estable, cortá la vasopresina.','Controlá la PAM de cerca las primeras horas: el rebote de hipotensión es el riesgo.','La ficha de vasopresina: con la PAM sostenida 8 h sin catecolaminas, bajar 0,005 U/min cada hora.'],
+  src:'Metaanálisis de estudios casi todos retrospectivos, en shock séptico: menos hipotensión si se saca antes la noradrenalina, sin diferencia de mortalidad. Hay mucha heterogeneidad (I² 87–91%) y con los estudios de menor sesgo la diferencia no fue significativa (doi:10.1016/j.hrtlng.2019.05.007). En shock cardiogénico es extrapolación. Metaanálisis en Shock 2020. doi:10.1097/SHK.0000000000001345 · Revisión con datos individuales en Pharmacotherapy 2019. doi:10.1002/phar.2265'},
  {a:'propo',b:'dexme',t:'Propofol → dexmedetomidina',s:'dexme sin carga y bajá el propofol de a poco',ev:'ex',
   st:['Iniciá la dexmedetomidina <b>sin carga</b> (la carga da bradicardia e hipotensión) con el propofol corriendo.','Esperá 30–60 min a que haga efecto y bajá el propofol de a poco según RASS.','Vigilá FC y TA, sobre todo con betabloqueante, amiodarona o BAV. La dexmedetomidina sola no alcanza para sedación profunda.'],
   src:'PADIS 2025 sugiere dexmedetomidina sobre propofol en ventilados (recomendación condicional); la forma de superponer es práctica. Lewis K, et al. Crit Care Med. 2025;53(3):e711-27. doi:10.1097/CCM.0000000000006574'},
@@ -1428,14 +1428,14 @@ const TRN=[
  {a:'remi',b:'morf',t:'Remifentanilo → morfina',s:'dá el opioide antes de bajar el remifentanilo',ev:'ec',
   st:['Dá la morfina <b>antes</b> de cortar: el remifentanilo se va en minutos y el paciente queda sin analgesia.','Bajalo de a poco en vez de cortarlo de golpe.','Evaluá con CPOT o BPS a los 15–30 min de bajarlo. Con ClCr bajo, la morfina se acumula.'],
   src:'ECA en cirugía de tiroides (no en UCI): el retiro gradual demoró el primer pedido de analgesia (76 vs 9 min). BMC Anesthesiol. 2019. doi:10.1186/s12871-019-0731-9'},
- {a:'esmo',vo:1,t:'Esmolol → betabloqueante oral',s:'dá el oral con el esmolol corriendo',ev:'ft',
-  st:['El esmolol dura 20–30 min al cortarlo: por eso hay que superponer.','Dá la <b>primera dosis del oral</b> con el esmolol corriendo.','A los 30 min, bajá el esmolol a la mitad.','Tras la segunda dosis del oral, si la FC y la TA se sostienen 1 h, cortá el esmolol.'],
-  src:'Esquema de la ficha técnica de Brevibloc para pasar a otro fármaco; con betabloqueante oral se aplica por extensión.'},
+ {a:'esmo',vo:1,t:'Esmolol → betabloqueante oral',s:'dá el oral con el esmolol corriendo',ev:'fx',
+  st:['El efecto del esmolol se va en 10–30 min al cortarlo: por eso hay que superponer.','Dá la <b>primera dosis del oral</b> con el esmolol corriendo.','A los 30 min, bajá el esmolol a la mitad.','Tras la segunda dosis del oral, si la FC y la TA se sostienen 1 h, cortá el esmolol.'],
+  src:'Esquema de la ficha de esmolol para pasar a otro antiarrítmico; con un betabloqueante oral es extrapolación (el de liberación inmediata tarda 1,5–2 h en llegar al pico).'},
  {a:'amio',vo:1,t:'Amiodarona EV → oral',s:'la oral inicial depende de cuánto lleva la bomba',ev:'ft',
-  st:['Pasá a oral cuando la arritmia esté estable (la mayoría, a las 48–96 h de EV).','Dosis oral inicial según cuánto lleva la bomba: <b>menos de 1 semana 800–1600 mg/día</b>; 1–3 semanas 600–800; más de 3 semanas 400.','La carga que dio la EV ya cuenta: no repitas la carga completa.','Seguí con FC, PR y QTc.'],
-  src:'Ficha técnica de amiodarona EV (tabla de conversión a vía oral).'},
- {a:'hep',vo:1,t:'Heparina → anticoagulante oral',s:'DOAC: sin superponer. Acenocumarol: sí',ev:'ft',
-  st:['<b>Apixabán o rivaroxabán</b>: cortá la bomba y dá la primera dosis en ese momento, sin superponer.','Dabigatrán y edoxabán en TEP/TVP: necesitan antes al menos 5 días de heparina.','<b>Acenocumarol</b>: sí se superpone. En TEP/TVP, mínimo 5 días de heparina y RIN ≥ 2 por 24 h antes de cortarla.'],
+  st:['Pasá a oral cuando la arritmia esté estable.','Dosis oral inicial según cuánto lleva la bomba: <b>menos de 1 semana 800–1600 mg/día</b>; 1–3 semanas 600–800; más de 3 semanas 400.','La carga que dio la EV ya cuenta: no repitas la carga completa.','Seguí con FC, PR y QTc.'],
+  src:'Ficha técnica de amiodarona EV (tabla de conversión a vía oral; asume una infusión de 720 mg/día, o sea 0,5 mg/min).'},
+ {a:'hep',vo:1,t:'Heparina → anticoagulante oral',s:'DOAC: sin superponer. Acenocumarol: sí',ev:'fx',
+  st:['<b>Rivaroxabán</b>: cortá la bomba y dá la primera dosis en ese momento, sin superponer. <b>Apixabán</b>: en la práctica igual (la ficha dice "a la siguiente dosis programada").','<b>Edoxabán</b>: 4 h después de cortar la bomba. En TEP/TVP, edoxabán y dabigatrán necesitan antes al menos 5 días de heparina.','En TEP/TVP la dosis inicial es más alta (apixabán 10 mg c/12 h por 7 días; rivaroxabán 15 mg c/12 h por 21 días).','No uses DOAC con prótesis valvular mecánica ni con síndrome antifosfolípido; revisá el ClCr.','<b>Acenocumarol</b>: sí se superpone. En TEP/TVP, mínimo 5 días de heparina y RIN ≥ 2 por 24 h antes de cortarla.'],
   src:'Fichas técnicas de apixabán y rivaroxabán. Kearon C, et al. Chest. 2016;149(2):315-52. doi:10.1016/j.chest.2015.11.026'}
  ,{a:'mida',b:'propo',t:'Midazolam → propofol',s:'sumá el propofol y bajá el midazolam de a poco',ev:'ex',
   st:['Iniciá el propofol con el midazolam corriendo.','Bajá el midazolam de a poco según RASS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Vigilá la TA al sumar el propofol.'],
@@ -1443,14 +1443,11 @@ const TRN=[
  {a:'mida',b:'dexme',t:'Midazolam → dexmedetomidina',s:'dexme sin carga y bajá el midazolam de a poco',ev:'ex',
   st:['Iniciá la dexmedetomidina <b>sin carga</b> con el midazolam corriendo.','Bajá el midazolam de a poco según RASS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Vigilá FC y TA: bradicardia e hipotensión, más con betabloqueante o BAV.'],
   src:'PADIS 2018 sugiere propofol o dexmedetomidina antes que benzodiacepinas (recomendación condicional); la forma de retirar es práctica. Devlin JW, et al. Crit Care Med. 2018;46(9):e825-73. doi:10.1097/CCM.0000000000003299'},
- {a:'fenta',b:'trama',t:'Fentanilo → tramadol',s:'tramadol primero; fentanilo de a poco',ev:'ex',
-  st:['Iniciá el tramadol con el fentanilo corriendo.','Bajá el fentanilo de a poco según CPOT o BPS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Tramadol: máximo 400 mg/día; con fentanilo suma riesgo serotoninérgico, por eso es un reemplazo y no una suma.'],
-  src:'Práctica de expertos; el riesgo serotoninérgico figura en la ficha técnica del tramadol.'},
  {a:'dexme',b:'clon',t:'Dexmedetomidina → clonidina',s:'superponé solo durante el retiro',ev:'ex',
-  st:['Si la dexmedetomidina lleva más de 24 h, cortarla de golpe puede dar abstinencia (taquicardia, hipertensión, agitación).','Sumá la clonidina y bajá la dexmedetomidina en horas: la superposición es solo para el retiro.','Vigilá FC y TA: son dos agonistas α2, suman bradicardia e hipotensión.'],
-  src:'Práctica de expertos, con evidencia limitada (series de casos). La abstinencia tras más de 24 h figura en la ficha técnica de la dexmedetomidina.'},
+  st:['Tras uso prolongado, cortar la dexmedetomidina de golpe puede dar abstinencia (náuseas, vómitos, agitación, taquicardia, hipertensión).','Sumá la clonidina y bajá la dexmedetomidina en horas: la superposición es solo para el retiro.','Vigilá FC y TA: son dos agonistas α2, suman bradicardia e hipotensión.'],
+  src:'Práctica de expertos, con evidencia limitada: una cohorte piloto de 42 adultos no mostró diferencia en abstinencia (Bouajram RH, et al. Crit Care Explor. 2020). La ficha describe síntomas de abstinencia tras suspenderla, sin umbral de horas.'},
  {a:'nps',vo:1,t:'Nitroprusiato → vasodilatador oral',s:'el oral primero, la bomba después',ev:'ex',
-  st:['Dá la primera dosis del oral (captopril, hidralazina o nitrato) con la bomba corriendo.','Empezá a bajar el nitroprusiato cuando el oral empiece a actuar (30–60 min).','El nitroprusiato se va en minutos: si lo cortás antes, la TA rebota.'],
+  st:['Dá la primera dosis del oral (captopril, hidralazina o nitrato) con la bomba corriendo.','Empezá a bajar el nitroprusiato cuando el oral empiece a actuar (30–60 min).','El nitroprusiato se va en minutos (la ficha sugiere asociar un antihipertensivo de acción más larga): si lo cortás antes, la TA rebota.','En infusión prolongada o con falla renal, vigilá el tiocianato.'],
   src:'Práctica de expertos; sin ensayo sobre el esquema.'},
  {a:'ntg',vo:1,t:'Nitroglicerina → nitrato oral',s:'el oral primero, la bomba después',ev:'ex',
   st:['Dá la primera dosis del nitrato oral con la bomba corriendo.','Bajá la nitroglicerina de a poco cuando el oral empiece a actuar.','Tras 24–48 h de bomba hay tolerancia: si la dosis viene subiendo, el problema es ese.'],
@@ -1463,24 +1460,24 @@ const OFF={
  adre:'El efecto se va en minutos: bajala de a poco con la PAM a la vista.',
  vaso:'Cortarla de golpe puede dar hipotensión de rebote: cortala con la noradrenalina ya apagada y la PAM estable.',
  dobu:'El efecto se va en minutos: bajá de a 2,5 y mirá TA, diuresis y lactato.',
- milri:'El efecto se va en horas (vida media 2–3 h, más larga con ClCr bajo): reevaluá a las 2–4 h antes de decidir.',
- levo:'No se apaga: el efecto sigue unos 7–10 días por su metabolito activo. Una caída a las pocas horas de cortarlo no es motivo para reiniciar un inotrópico sin evaluar.',
- esmo:'El efecto se va en 20–30 min. En quien tomaba betabloqueante crónico, cubrí con el oral antes de cortarlo: rebote.',
+ milri:'El efecto se va en horas (vida media ≈ 2,3 h, más larga con ClCr bajo): reevaluá a las 2–4 h antes de decidir.',
+ levo:'No se apaga: el efecto sigue unos 7–10 días por su metabolito activo. Si hay hipoperfusión, no demores el soporte esperando ese efecto.',
+ esmo:'El efecto se va en 10–30 min. En quien tomaba betabloqueante crónico, cubrí con el oral antes de cortarlo: rebote.',
  labe:'La vida media es de 5–6 h: el efecto sigue varias horas después de cortarlo.',
  amio:'La vida media es de semanas: el efecto y las interacciones siguen mucho después de cortarla.',
- nps:'El efecto se va en minutos: cubrí con el vasodilatador oral antes de cortarlo para evitar el rebote.',
+ nps:'El efecto se va en minutos: cubrí con el vasodilatador oral antes de cortarlo para evitar el rebote. En infusión prolongada o con falla renal, vigilá el tiocianato.',
  ntg:'El efecto se va en minutos. Tras 24–48 h aparece tolerancia.',
- dexme:'Si lleva más de 24 h, bajala de a poco: cortarla de golpe puede dar abstinencia (taquicardia, hipertensión, agitación).',
+ dexme:'Cortarla de golpe puede dar abstinencia (náuseas, vómitos, agitación, taquicardia, hipertensión), sobre todo tras uso prolongado: bajala de a poco.',
  clon:'Cortarla de golpe puede dar hipertensión de rebote: bajala de a poco.',
  propo:'Se va en minutos; tras días de infusión el despertar se alarga.',
  mida:'Tras varios días, no la cortes de golpe: abstinencia. Se acumula (metabolito activo) con falla renal o hepática.',
  fenta:'Tras varios días, bajala de a poco: abstinencia. En infusión larga se acumula y el despertar se prolonga.',
  morf:'Tras varios días, bajala de a poco: abstinencia. Con ClCr bajo se acumula.',
- hep:'El efecto se va en pocas horas (vida media ≈ 1–1,5 h): coordiná con el anticoagulante que sigue.',
+ hep:'El efecto se va en pocas horas (vida media de 0,5–2 h según la dosis): coordiná con el anticoagulante que sigue.',
  insu:'Vida media de minutos: dá la subcutánea 1–2 h antes de cortar la bomba.'
 };
 function offSheet(p){const t=OFF[p.id];return t?`<details class="blk prep"><summary><span class="ps"><small>Al cortarla</small><b>Qué esperar</b></span></summary><div class="prepin"><p class="hint">${t}</p></div></details>`:''}
-const TRNEV={ft:'Base: ficha técnica',ex:'Base: práctica de expertos, sin ensayo',ob:'Base: estudios observacionales y metaanálisis',ec:'Base: ensayo en otro contexto (extrapolado)'};
+const TRNEV={ft:'Base: ficha técnica',fx:'Base: ficha técnica, extrapolada a otro fármaco',ex:'Base: práctica de expertos, sin ensayo',ob:'Base: estudios observacionales y metaanálisis',ec:'Base: ensayo en otro contexto (extrapolado)'};
 function trnPair(){const ix=id=>S.pumps.findIndex(p=>p.id===id);return TRN.filter(x=>!x.vo&&ix(x.a)>=0&&ix(x.b)>=0&&(x.any||ix(x.a)<ix(x.b)))}
 function trnFor(id){return TRN.filter(x=>x.vo?x.a===id:trnPair().includes(x)&&(x.a===id||x.b===id))}
 function trnBody(x){const dy=x.dyn?x.dyn():'';return `<ol class="steps">${dy}${x.st.map(s=>`<li>${s}</li>`).join('')}</ol><p class="hint"><b>${TRNEV[x.ev]}.</b> ${x.src}</p>`}
@@ -2867,14 +2864,15 @@ function openEstado(){openUid=null;bolIdx=null;cadOpen=false;
 
 // ================= Copiar =================
 const DILTXT={'Dx5%':'dextrosa 5%','SF':'solución fisiológica 0.9%'};
-function copyOut(txt){const done=()=>{$('#copied').textContent='Copiado. Pegalo en la evolución.'};
+function copyOut(txt,extra){const done=()=>{$('#copied').textContent='Copiado. Pegalo en la evolución.'+(extra?' '+extra:'')};
   const fb=()=>{$('#copied').innerHTML='Seleccioná y copiá:<textarea class="cp" rows="5" readonly></textarea>';const t=document.querySelector('.cp');t.value=txt;t.focus();t.select()};
   try{navigator.clipboard.writeText(txt).then(done,fb)}catch(e){fb()}}
 function indicLine(p){const d=byId(p.id),n=fmt(p.n,2),uw=uWord(d,p.n),dl=dilOf(p),v=fmt(vTot(p),0);
   const prep=d.pure?`${n} ${uw} puro, ${v} ml`:`${n} ${uw} en ${v} ml de ${DILTXT[dl]||dl}`;
   return `${pName(p)} (${prep})\t${fmt(rate(p,p.dose),1)} ml/h\tBIC\tEV`}
 $('#copyBtn2').addEventListener('click',()=>{if(!S.pumps.length)return;
-  copyOut(S.pumps.filter(p=>!needsW(p)).map(indicLine).join('\n'))});
+  const ok=S.pumps.filter(p=>!needsW(p)),out=S.pumps.length-ok.length;
+  copyOut(ok.map(indicLine).join('\n'),out?`Ojo: ${out} ${out>1?'bombas quedaron afuera':'bomba quedó afuera'} porque falta el peso.`:'')});
 $('#copyBtn').addEventListener('click',()=>{if(!S.pumps.length)return;
   const lines2=S.pumps.filter(p=>!needsW(p)).map(p=>{const d=byId(p.id),dd=doseDec(d);
     return `${d.name} ${fmt(p.dose,Math.max(dd,2))} ${unitLbl(d)} (${fmt(rate(p,p.dose),1)} ml/h)`});
