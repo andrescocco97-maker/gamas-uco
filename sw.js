@@ -1,6 +1,6 @@
 // Gamas UCO sin conexión. Con señal, la página se baja siempre de nuevo (así llegan las actualizaciones);
 // sin señal, abre la última copia guardada. Las fuentes se guardan la primera vez que se usan.
-const V='gamas-v46'; // subir junto con APP_BUILD de index.html (v43)
+const V='gamas-v47'; // subir junto con APP_BUILD de index.html (v44)
 const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('gamas-')&&k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

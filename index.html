@@ -719,7 +719,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 body.gd .gdl{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 14px 0;font-size:.78rem;color:var(--dim)}
 .gdl b{color:var(--muted);font-weight:600}.gdbs{display:flex;gap:6px}
 .gdx{border:0;background:none;color:var(--muted);font:600 .78rem var(--font);min-height:44px;padding:0 8px;border-bottom:0;text-decoration:underline dotted}
-body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.gd .foot,body.gd .pump .rbc,body.gd .pump .stp,body.gd .pump .pm,body.gd .pump .tit,body.gd .pump .hito,body.gd .pump .flags,body.gd .pump .pmx,body.gd .hint-sw,body.gd .lab .pr{display:none!important}
+body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.gd .foot,body.gd .pump .rbc,body.gd .pump .pm,body.gd .pump .tit,body.gd .pump .hito,body.gd .pump .flags,body.gd .pump .pmx,body.gd .hint-sw,body.gd .lab .pr{display:none!important}
 .gdsh{position:fixed;inset:0;z-index:60}.gdbg{position:absolute;inset:0;background:rgba(0,0,0,.55)}
 .gdp{position:absolute;left:0;right:0;bottom:0;background:var(--panel2);border-radius:20px 20px 0 0;padding:18px 16px calc(24px + env(safe-area-inset-bottom))}
 .gdp h4{font:700 .82rem var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}.gdp p{font-size:.82rem;color:var(--dim);margin:0 0 14px}
@@ -797,7 +797,7 @@ body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v43', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v44', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
