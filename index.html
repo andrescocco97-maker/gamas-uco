@@ -761,7 +761,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v34', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v35', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -1407,10 +1407,10 @@ const PDM2={};PD.forEach(x=>{const key=pk(x.a,x.b);if(!PDM2[key])PDM2[key]=x});
 // Tipos: pair = las dos bombas están corriendo (a viene antes que b, salvo any:true); vo = pasaje de una bomba a vía oral (se ve siempre en esa bomba).
 // st = pasos en orden. ev = qué tan firme es la base: 'ft' ficha técnica, 'ex' consenso o práctica de expertos, 'ob' observacional o metaanálisis, 'ec' ensayo extrapolado.
 const TRN=[
- {a:'milri',b:'levo',t:'Milrinona → levosimendán',s:'no hace falta cortar antes; vigilá la TA',ev:'ex',
+ {a:'milri',b:'levo',t:'Milrinona → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán no se recomienda por debajo de 30; la milrinona va con dosis ajustada.</li>`:''},s:'no hace falta cortar antes; vigilá la TA',ev:'ex',
   st:['Arrancá el levosimendán <b>sin carga</b> y dejá la milrinona corriendo.','Juntas suman vasodilatación: controlá la TA a los 15–30 min y cada hora las primeras horas.','Si la TA aguanta, bajá la milrinona a la mitad y cortala en 1–2 h (vida media ≈ 2–3 h, más larga con ClCr bajo).','Si cae la TA, cortá primero la <b>milrinona</b>: se va en horas. El levosimendán no se apaga, su metabolito activo dura unos 7–10 días.'],
   src:'Ningún ensayo compara esquemas de superposición; es práctica de expertos. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005 · Bouchez S, et al. Cardiovasc Drugs Ther. 2018;32(6):617-24. doi:10.1007/s10557-018-6838-2'},
- {a:'dobu',b:'levo',t:'Dobutamina → levosimendán',s:'bajá la dobutamina de a poco; el levo tarda en hacer efecto',ev:'ex',
+ {a:'dobu',b:'levo',t:'Dobutamina → levosimendán',dyn:()=>{const c=crcl();return isFinite(c)&&c<30?`<li><b>ClCr ${fmt(c,0)} ml/min</b>: el levosimendán no se recomienda por debajo de 30; la milrinona va con dosis ajustada.</li>`:''},s:'bajá la dobutamina de a poco; el levo tarda en hacer efecto',ev:'ex',
   st:['Arrancá el levosimendán <b>sin carga</b> con la dobutamina corriendo.','Bajá la dobutamina de a 2,5 mcg/kg/min cada 30–60 min mientras la TA, la diuresis y el lactato se sostengan.','Si empeora al bajar, volvé un escalón y esperá: el efecto pleno del levosimendán llega horas después.'],
   src:'Práctica de expertos, sin ensayo sobre el esquema de retiro. Farmakis D, et al. Int J Cardiol. 2019. doi:10.1016/j.ijcard.2019.09.005'},
  {a:'dobu',b:'milri',t:'Dobutamina → milrinona',s:'no cortes la dobutamina rápido: la milrinona tarda horas',ev:'ex',
@@ -1437,11 +1437,53 @@ const TRN=[
  {a:'hep',vo:1,t:'Heparina → anticoagulante oral',s:'DOAC: sin superponer. Acenocumarol: sí',ev:'ft',
   st:['<b>Apixabán o rivaroxabán</b>: cortá la bomba y dá la primera dosis en ese momento, sin superponer.','Dabigatrán y edoxabán en TEP/TVP: necesitan antes al menos 5 días de heparina.','<b>Acenocumarol</b>: sí se superpone. En TEP/TVP, mínimo 5 días de heparina y RIN ≥ 2 por 24 h antes de cortarla.'],
   src:'Fichas técnicas de apixabán y rivaroxabán. Kearon C, et al. Chest. 2016;149(2):315-52. doi:10.1016/j.chest.2015.11.026'}
+ ,{a:'mida',b:'propo',t:'Midazolam → propofol',s:'sumá el propofol y bajá el midazolam de a poco',ev:'ex',
+  st:['Iniciá el propofol con el midazolam corriendo.','Bajá el midazolam de a poco según RASS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Vigilá la TA al sumar el propofol.'],
+  src:'PADIS 2018 sugiere propofol o dexmedetomidina antes que benzodiacepinas (recomendación condicional); la forma de retirar es práctica. Devlin JW, et al. Crit Care Med. 2018;46(9):e825-73. doi:10.1097/CCM.0000000000003299'},
+ {a:'mida',b:'dexme',t:'Midazolam → dexmedetomidina',s:'dexme sin carga y bajá el midazolam de a poco',ev:'ex',
+  st:['Iniciá la dexmedetomidina <b>sin carga</b> con el midazolam corriendo.','Bajá el midazolam de a poco según RASS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Vigilá FC y TA: bradicardia e hipotensión, más con betabloqueante o BAV.'],
+  src:'PADIS 2018 sugiere propofol o dexmedetomidina antes que benzodiacepinas (recomendación condicional); la forma de retirar es práctica. Devlin JW, et al. Crit Care Med. 2018;46(9):e825-73. doi:10.1097/CCM.0000000000003299'},
+ {a:'fenta',b:'trama',t:'Fentanilo → tramadol',s:'tramadol primero; fentanilo de a poco',ev:'ex',
+  st:['Iniciá el tramadol con el fentanilo corriendo.','Bajá el fentanilo de a poco según CPOT o BPS. Si lleva varios días, no lo cortes de golpe: abstinencia.','Tramadol: máximo 400 mg/día; con fentanilo suma riesgo serotoninérgico, por eso es un reemplazo y no una suma.'],
+  src:'Práctica de expertos; el riesgo serotoninérgico figura en la ficha técnica del tramadol.'},
+ {a:'dexme',b:'clon',t:'Dexmedetomidina → clonidina',s:'superponé solo durante el retiro',ev:'ex',
+  st:['Si la dexmedetomidina lleva más de 24 h, cortarla de golpe puede dar abstinencia (taquicardia, hipertensión, agitación).','Sumá la clonidina y bajá la dexmedetomidina en horas: la superposición es solo para el retiro.','Vigilá FC y TA: son dos agonistas α2, suman bradicardia e hipotensión.'],
+  src:'Práctica de expertos, con evidencia limitada (series de casos). La abstinencia tras más de 24 h figura en la ficha técnica de la dexmedetomidina.'},
+ {a:'nps',vo:1,t:'Nitroprusiato → vasodilatador oral',s:'el oral primero, la bomba después',ev:'ex',
+  st:['Dá la primera dosis del oral (captopril, hidralazina o nitrato) con la bomba corriendo.','Empezá a bajar el nitroprusiato cuando el oral empiece a actuar (30–60 min).','El nitroprusiato se va en minutos: si lo cortás antes, la TA rebota.'],
+  src:'Práctica de expertos; sin ensayo sobre el esquema.'},
+ {a:'ntg',vo:1,t:'Nitroglicerina → nitrato oral',s:'el oral primero, la bomba después',ev:'ex',
+  st:['Dá la primera dosis del nitrato oral con la bomba corriendo.','Bajá la nitroglicerina de a poco cuando el oral empiece a actuar.','Tras 24–48 h de bomba hay tolerancia: si la dosis viene subiendo, el problema es ese.'],
+  src:'Práctica de expertos; sin ensayo sobre el esquema.'}
+
 ];
+// Qué pasa al cortar cada droga (para decidir cómo retirarla).
+const OFF={
+ nora:'El efecto se va en minutos: bajala de a poco con la PAM a la vista.',
+ adre:'El efecto se va en minutos: bajala de a poco con la PAM a la vista.',
+ vaso:'Cortarla de golpe puede dar hipotensión de rebote: cortala con la noradrenalina ya apagada y la PAM estable.',
+ dobu:'El efecto se va en minutos: bajá de a 2,5 y mirá TA, diuresis y lactato.',
+ milri:'El efecto se va en horas (vida media 2–3 h, más larga con ClCr bajo): reevaluá a las 2–4 h antes de decidir.',
+ levo:'No se apaga: el efecto sigue unos 7–10 días por su metabolito activo. Una caída a las pocas horas de cortarlo no es motivo para reiniciar un inotrópico sin evaluar.',
+ esmo:'El efecto se va en 20–30 min. En quien tomaba betabloqueante crónico, cubrí con el oral antes de cortarlo: rebote.',
+ labe:'La vida media es de 5–6 h: el efecto sigue varias horas después de cortarlo.',
+ amio:'La vida media es de semanas: el efecto y las interacciones siguen mucho después de cortarla.',
+ nps:'El efecto se va en minutos: cubrí con el vasodilatador oral antes de cortarlo para evitar el rebote.',
+ ntg:'El efecto se va en minutos. Tras 24–48 h aparece tolerancia.',
+ dexme:'Si lleva más de 24 h, bajala de a poco: cortarla de golpe puede dar abstinencia (taquicardia, hipertensión, agitación).',
+ clon:'Cortarla de golpe puede dar hipertensión de rebote: bajala de a poco.',
+ propo:'Se va en minutos; tras días de infusión el despertar se alarga.',
+ mida:'Tras varios días, no la cortes de golpe: abstinencia. Se acumula (metabolito activo) con falla renal o hepática.',
+ fenta:'Tras varios días, bajala de a poco: abstinencia. En infusión larga se acumula y el despertar se prolonga.',
+ morf:'Tras varios días, bajala de a poco: abstinencia. Con ClCr bajo se acumula.',
+ hep:'El efecto se va en pocas horas (vida media ≈ 1–1,5 h): coordiná con el anticoagulante que sigue.',
+ insu:'Vida media de minutos: dá la subcutánea 1–2 h antes de cortar la bomba.'
+};
+function offSheet(p){const t=OFF[p.id];return t?`<details class="blk prep"><summary><span class="ps"><small>Al cortarla</small><b>Qué esperar</b></span></summary><div class="prepin"><p class="hint">${t}</p></div></details>`:''}
 const TRNEV={ft:'Base: ficha técnica',ex:'Base: práctica de expertos, sin ensayo',ob:'Base: estudios observacionales y metaanálisis',ec:'Base: ensayo en otro contexto (extrapolado)'};
 function trnPair(){const ix=id=>S.pumps.findIndex(p=>p.id===id);return TRN.filter(x=>!x.vo&&ix(x.a)>=0&&ix(x.b)>=0&&(x.any||ix(x.a)<ix(x.b)))}
 function trnFor(id){return TRN.filter(x=>x.vo?x.a===id:trnPair().includes(x)&&(x.a===id||x.b===id))}
-function trnBody(x){return `<ol class="steps">${x.st.map(s=>`<li>${s}</li>`).join('')}</ol><p class="hint"><b>${TRNEV[x.ev]}.</b> ${x.src}</p>`}
+function trnBody(x){const dy=x.dyn?x.dyn():'';return `<ol class="steps">${dy}${x.st.map(s=>`<li>${s}</li>`).join('')}</ol><p class="hint"><b>${TRNEV[x.ev]}.</b> ${x.src}</p>`}
 function trnSheet(p){const L=trnFor(p.id);return L.map(x=>`<details class="blk prep"><summary><span class="ps"><small>${x.vo?'Pasaje a vía oral':'Cabalgamiento'}</small><b>${x.t}</b></span></summary><div class="prepin">${trnBody(x)}</div></details>`).join('')}
 
 // ================= Bolos (adultos) =================
@@ -2454,7 +2496,7 @@ function renderSheet(){if(bolIdx!=null){renderBolo();return}
       <div class="tick ${pct(effUmin(p))<12?'l':''}" style="left:${pct(effUmin(p))}%"><span>${fmt(effUmin(p),dd)}</span></div><div class="tick ${pct(mx)>88?'r':''}" style="left:${pct(mx)}%"><span>máx ${fmt(mx,dd)}</span></div><div class="mk" style="left:${pct(p.dose)}%"></div></div>
     ${timeLine(p)}${supplyLine(p)}<p class="hint">Habitual ${fmt(effUmin(p),dd)}–${fmt(Math.min(d.d.umax,mx),dd)} ${d.unit}${mx<d.d.max?' · máximo ajustado a función renal':''}${d.lab?` · según ${d.lab}`:''}${zone?`. ${zone[1]}.`:''}</p></div>
 `}
-  ${trnSheet(p)}
+  ${trnSheet(p)}${offSheet(p)}
   ${nW?'':`
   <div class="blk"><div class="bh">Tabla · tocá una fila</div><table><thead><tr><th>${unitLbl(d)}</th>${d.wb?`<th>${d.perMin?d.num+'/min':d.num+'/h'}</th>`:''}<th>ml/h</th></tr></thead>
     <tbody>${d.quick.map(q=>`<tr class="q ${Math.abs(q-p.dose)<1e-6?'cur':''}" data-q="${q}"><td>${fmt(q,dd)}</td>${d.wb?`<td>${d.perMin?fmt(q*w,1):perHFmt(q*w)}</td>`:''}<td>${fmt(rate(p,q),1)}</td></tr>`).join('')}</tbody></table></div>`}
