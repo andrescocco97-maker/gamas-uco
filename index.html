@@ -726,6 +726,25 @@ body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.
 .gdc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.gdc button{border:0;background:var(--panel);color:var(--fg);border-radius:var(--r2);min-height:44px;padding:0 16px;font:600 .95rem var(--font)}
 .gdt{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted);margin-bottom:14px}.gdt input{background:var(--panel);border:0;color:var(--fg);border-radius:var(--r2);min-height:44px;padding:0 12px;font:700 1.4rem var(--num)}
 .gdok{width:100%;border:0;background:var(--key);color:var(--bg);border-radius:var(--r1);min-height:52px;font:700 .85rem var(--font);letter-spacing:.08em;text-transform:uppercase}.gdh{margin-top:12px;font-size:.76rem;color:var(--dim)}
+
+/* Guardia compacta: una tarjeta baja por bomba */
+body.gd .pump{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"lab stp" "pb stp" "gdl gdl";align-items:center;gap:0 10px;padding:8px 10px 4px!important;margin:0}
+body.gd .pumps,body.gd #pumps{gap:6px}
+body.gd .pump .lab{grid-area:lab;padding:0!important}body.gd .lab .go{display:none}body.gd .lab .ab{font-size:.8rem}body.gd .sg{font-size:.6rem;padding:3px 5px}
+body.gd .pump .pb{grid-area:pb;margin:0!important;gap:8px;align-items:baseline}
+body.gd .disp .in{font-size:2rem!important;min-height:0;padding:0;line-height:1.1}body.gd .dose .in{font-size:1.15rem!important;min-height:0;padding:0}
+body.gd .disp .lbl,body.gd .dose .lbl{font-size:.68rem}
+body.gd .pump .stp{grid-area:stp;display:flex!important;gap:6px;margin:0!important}
+body.gd .pump .stp button{width:50px;min-height:50px!important;font-size:1.5rem}
+body.gd .pump .gdl{grid-area:gdl;margin:0 0 0!important;font-size:.7rem}body.gd .gdx{min-height:32px;padding:0 6px;font-size:.7rem}
+
+body.gd .disp,body.gd .dose{flex-direction:row!important;align-items:baseline!important;gap:4px}
+body.gd .pump .stp button{width:46px;min-height:44px!important}
+body.gd .pump{padding:6px 10px 2px!important}
+body.gd .disp .in{font-size:1.7rem!important}
+
+body.gd .pump .mid{display:none!important}body.gd .pump .pb{display:flex!important;justify-content:space-between;align-items:baseline}
+body.gd .gdl{margin-top:0!important}
 </style>
 </head>
 <body>
@@ -797,7 +816,7 @@ body.gd .ptw,body.gd .sum,body.gd .sitchip,body.gd #sitHome,body.gd #ixBox,body.
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v44', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v47', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
