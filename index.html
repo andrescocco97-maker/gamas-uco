@@ -108,6 +108,7 @@ details.alc summary{cursor:pointer;padding:12px;font-size:.88rem;font-weight:600
 details.alc .al{background:transparent;border-left-width:0;padding-top:0}
 .pbar{position:fixed;top:0;left:0;right:0;z-index:4;display:flex;gap:12px;justify-content:center;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px;font-size:.84rem;color:var(--muted);background:color-mix(in srgb,var(--bg) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .2s;cursor:pointer}
 .pbar.on{transform:none}.pbar b{color:var(--fg)}
+.bl+button.old,#beds button.old{border-style:dashed}
 .stale{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:color-mix(in srgb,var(--warn) 16%,var(--panel));border-radius:var(--r2);padding:10px 12px;font-size:.88rem}
 .stale span{flex:1 1 160px}
 .in.bad{outline:2px solid var(--bad)}
@@ -761,7 +762,7 @@ details.calc>summary{gap:8px}details.calc>summary>span:first-child{flex:1;min-wi
 <script>
 // ================= Endurecimiento: errores, versión y almacenamiento =================
 // Falla a la vista: si algo se rompe, el médico lo ve y verifica a mano. Sin telemetría: nada sale del celular.
-const APP_VER='2026.11.24', APP_BUILD='v37', QUIET=true;
+const APP_VER='2026.11.24', APP_BUILD='v38', QUIET=true;
 const HARD={errs:[],store:'ok',sw:'n/d',corrupt:false};
 function hlog(k,m){try{HARD.errs.push({t:new Date().toISOString(),k:String(k).slice(0,20),m:String(m==null?'':m).replace(/[\r\n]+/g,' ').slice(0,160)});if(HARD.errs.length>20)HARD.errs.shift()}catch(_){/* el registro nunca debe romper la app */}}
 function hbanner(txt,kind){
@@ -811,7 +812,7 @@ const DRUGS = [
   d:{min:0.01,umin:0.01,umax:0.03,max:0.04,step:0.01,start:0.03},quick:[0.01,0.02,0.03,0.04],
   notes:()=>['Dosis fija: no se calcula por peso.','Se suma a la noradrenalina; no se usa sola como primera línea.','Más de 0,03–0,04 UI/min: riesgo de isquemia digital y mesentérica.']},
  {id:'dopa',ob:'aj',g:'Vasopresores',name:'Dopamina',short:'Dopa',unit:'mcg/kg/min',num:'mcg',perMin:true,wb:true,
-  amp:{q:200,u:'mg',ml:5,label:'amp 200 mg / 5 ml'},std:{n:2,vol:250},alt:{n:2,vol:100},dils:['Dx5%','SF'],lad:[1,2,3,4,5,6,7,8,9,10,12,14,16,18,20],
+  amp:{q:200,u:'mg',ml:5,label:'amp 200 mg / 5 ml'},std:{n:2,vol:250},alt:{n:3,vol:250},dils:['Dx5%','SF'],lad:[1,2,3,4,5,6,7,8,9,10,12,14,16,18,20],
   via:'Central de preferencia: la extravasación necrosa.',viaAlt:'Concentrada: solo por vía central.',keep:'Cambiar cada 24 h.',
   d:{min:1,umin:2,umax:10,max:20,step:2,start:5},quick:[2,5,10,15,20],vis:1,
   zones:[[2,'Dosis baja: dopaminérgica ("renal"), sin beneficio renal demostrado'],[10,'Dosis moderada: β1, inotrópica'],[Infinity,'Dosis alta: α1, vasoconstrictora']],
@@ -847,12 +848,12 @@ const DRUGS = [
   notes:()=>['Dosis fija: no se calcula por peso. Se titula según la frecuencia cardíaca.','Puente en bradicardia o BAV inestable hasta el marcapasos.','Útil en torsades de pointes dependientes de bradicardia.','Aumenta el consumo de O₂: precaución en isquemia activa.']},
 
  {id:'ntg',g:'Vasodilatadores',name:'Nitroglicerina',short:'NTG',unit:'mcg/min',num:'mcg',perMin:true,wb:false,
-  amp:{q:25,u:'mg',ml:5,label:'amp 25 mg / 5 ml'},std:{n:2,vol:250},alt:{n:2,vol:100},dils:['Dx5%','SF'],lad:[5,10,15,20,30,40,50,60,80,100,120,150,200],
+  amp:{q:25,u:'mg',ml:5,label:'amp 25 mg / 5 ml'},std:{n:2,vol:250},dils:['Dx5%','SF'],lad:[5,10,15,20,30,40,50,60,80,100,120,150,200],
   via:'Periférica aceptable.',keep:'Cambiar cada 24 h. Usar sachet y tubuladura sin PVC: el PVC adsorbe la droga.',
   d:{min:5,umin:10,umax:200,max:200,step:10,start:10},quick:[5,10,20,50,100,200],
   notes:()=>['Se titula de a 5–10 mcg/min cada 3–5 min según TA y síntomas.','Contraindicada con inhibidores de PDE5 recientes y en IAM de VD.','Tolerancia a las 24–48 h.']},
  {id:'nps',ob:'aj',g:'Vasodilatadores',name:'Nitroprusiato',short:'NPS',unit:'mcg/kg/min',num:'mcg',perMin:true,wb:true,
-  amp:{q:50,u:'mg',ml:2,label:'fco 50 mg (reconstituido en 2 ml)',vial:true},std:{n:1,vol:250},alt:{n:1,vol:100},dils:['Dx5%'],onlyD:true,lad:[0.1,0.2,0.3,0.4,0.5,0.75,1,1.5,2,2.5,3,4,5,6,8,10],
+  amp:{q:50,u:'mg',ml:2,label:'fco 50 mg (reconstituido en 2 ml)',vial:true},std:{n:1,vol:250},dils:['Dx5%'],onlyD:true,lad:[0.1,0.2,0.3,0.4,0.5,0.75,1,1.5,2,2.5,3,4,5,6,8,10],
   via:'Periférica aceptable.',keep:'Proteger de la luz: cubrir sachet y tubuladura. Cambiar cada 24 h.',
   d:{min:0.1,umin:0.3,umax:3,max:10,step:0.2,start:0.3},quick:[0.3,0.5,1,2,3,5],
   renal:c=>c<30?{msg:`con ClCr ${fmt(c,0)} ml/min se acumula tiocianato: usá la menor dosis y el menor tiempo posible.`}:null,
@@ -929,7 +930,7 @@ const DRUGS = [
 
  {id:'atra',ob:'id',g:'Bloqueo neuromuscular',name:'Atracurio',short:'Atra',unit:'mcg/kg/min',num:'mcg',perMin:true,wb:true,
   amp:{q:50,u:'mg',ml:5,label:'amp 50 mg / 5 ml'},std:{n:10,vol:250},dils:['SF','Dx5%'],lad:[3,4,5,6,7,8,9,10,12,14,16,18,20],
-  via:'Periférica aceptable.',keep:'Conservar las ampollas en heladera. Diluido: cambiar cada 24 h.',
+  via:'Periférica aceptable.',keep:'Conservar las ampollas en heladera. Diluido en SF: cambiar cada 24 h; en dextrosa 5% es menos estable: cada 8 h.',
   d:{min:3,umin:5,umax:12,max:20,step:1,start:8},quick:[5,8,10,12,15,20],
   notes:W=>[`Bolo de intubación 0,4–0,5 mg/kg${W?` = ${fmt(0.4*W,0)}–${fmt(0.5*W,0)} mg`:''}.`,'Eliminación de Hofmann: no requiere ajuste renal ni hepático.','Libera histamina: hipotensión y broncoespasmo en bolos rápidos.','Sedación profunda y analgesia antes de bloquear. Monitoreá con tren de cuatro (TOF): la meta es 1 o 2 respuestas de los 4 estímulos.']},
  {id:'cisa',ob:'id',g:'Bloqueo neuromuscular',name:'Cisatracurio',short:'Cisa',unit:'mcg/kg/min',num:'mcg',perMin:true,wb:true,
@@ -979,8 +980,8 @@ const byId=id=>DRUGS.find(d=>d.id===id);
 // Criterio conservador: si alguna fuente dice incompatible → 'I'; si es variable o hay reportes contradictorios → 'V'; 'C' solo sin contradicción.
 const YRAW={
  I:'furo:adre furo:amio furo:vaso furo:cisa furo:dobu furo:dopa furo:esmo furo:iso furo:keta furo:labe furo:mida furo:milri furo:morf furo:nora furo:rocu furo:atra '+
-   'clon:furo amio:hep hep:dobu hep:cisa hep:keta hep:labe dobu:insu dobu:propo insu:labe insu:nora atra:propo cisa:propo',
- V:'clon:dobu amio:dobu amio:nps amio:nora amio:insu insu:furo insu:hep insu:keta insu:rocu insu:dopa insu:adre insu:mida insu:morf insu:vaso nps:dobu adre:propo',
+   'amio:nps insu:rocu clon:furo amio:hep hep:dobu hep:cisa hep:keta hep:labe dobu:insu dobu:propo insu:labe insu:nora atra:propo cisa:propo',
+ V:'clon:dobu amio:dobu amio:nora amio:insu insu:furo insu:hep insu:keta insu:dopa insu:adre insu:mida insu:morf insu:vaso nps:dobu adre:propo',
  C:'furo:fenta furo:hep furo:nps furo:levo '+
    'amio:atra amio:cisa amio:dexme amio:dopa amio:adre amio:esmo amio:fenta amio:keta amio:labe amio:mida amio:milri amio:morf amio:ntg amio:vaso '+
    'hep:dexme hep:dopa hep:fenta hep:mida hep:morf hep:nora hep:rocu hep:nps hep:milri hep:adre '+
@@ -1625,7 +1626,7 @@ function cvCalc(x){const w=cvTab==='ped'?PEDW:W();let lo,hi;if(x.kg){lo=x.kg[0]*
   else if(ok){const a=ampA(x.a),need=Math.max(1,Math.ceil(hi/a.q-1e-9)),wd=a.w?a.w[need>1?1:0]:(need>1?'ampollas':'ampolla');
     if(x.bag){const c=need*a.q/x.bag;
       if(x.whole){prep=`${need} ${wd} en ${x.bag} ml de ${x.fl}`;vol=`todo en ${x.min} min`}
-      else{prep=`${need} ${wd} en ${x.bag} ml de ${x.fl} (${fmt(c,c<1?3:1)} ${a.u}/ml)`;vol=`${rg(lo/c,hi/c,ml)} ml`+(x.min?` · ≈ ${rg(lo/c/x.min*60,hi/c/x.min*60,v=>fmt(v,0))} ml/h`:'')}}
+      else{prep=`${need} ${wd} en ${x.bag} ml de ${x.fl} (${fmt(c,c<1?3:1)} ${a.u}/ml)${x.a==='amio'&&c>2?' · más de 2 mg/ml: por vía central':''}`;vol=`${rg(lo/c,hi/c,ml)} ml`+(x.min?` · ≈ ${rg(lo/c/x.min*60,hi/c/x.min*60,v=>fmt(v,0))} ml/h`:'')}}
     else if(x.dil&&x.dil>need*a.ml){const c=need*a.q/x.dil;prep=`${need} ${wd} + SF hasta ${x.dil} ml (${fmt(c,c<1?3:1)} ${a.u}/ml)`;vol=`${rg(lo/c,hi/c,ml)} ml`}
     else{const c=a.q/a.ml;prep=`directo (${a.l})`;vol=`${rg(lo/c,hi/c,ml)} ml`+(x.min?` en ${x.min} min`:'')}}
   return {dose,prep,vol,per:x.kg?`${rg(x.kg[0],x.kg[1],v=>fmt(v,3))} ${x.u}/kg${x.max?` · máx ${fmt(x.max,1)}`:''}`:''}}
@@ -2036,25 +2037,25 @@ function load(){
       if(!r){const o=jget('gamasUCO.v3');if(o&&typeof o==='object'){r={...fresh(),...o,cond:[],meds:(Array.isArray(o.meds)?o.meds:[]).filter(i=>MEDI[i])};delete r.wmode;delete r.qtc}}
       B={cur:'1',list:r&&typeof r==='object'?{'1':r}:{}}}
     const now=Date.now(),L={};
-    Object.keys(B.list).slice(0,60).forEach(id=>{const r=B.list[id];if(BEDID.test(id)&&r&&typeof r==='object'&&now-r.t<TTL)L[id]=r});
+    Object.keys(B.list).slice(0,60).forEach(id=>{const r=B.list[id];if(BEDID.test(id)&&r&&typeof r==='object'&&now-r.t<TTL&&r.t<=now+6e4)L[id]=r});
     BEDS={cur:BEDID.test(String(B.cur))?String(B.cur):'1',list:L};useBed(BEDS.list[BEDS.cur])}catch(e){hlog('carga',e&&e.message);HARD.corrupt=true}
   try{PREF=cleanPref(jget(PKEY))}catch(e){PREF={}}
   if(HARD.corrupt)setTimeout(()=>hbanner('Algunos datos guardados estaban dañados y se descartaron. Revisá los datos del paciente.','error'),0)}
 function saveBeds(){lsSet(BKEY,JSON.stringify(BEDS))}
-function save(){S.t=Date.now();try{trackHist()}catch(e){}BEDS.list[BEDS.cur]=ser(S);saveBeds()}
+function save(){const nx=ser(S),pv=BEDS.list[BEDS.cur];let same=false;try{same=!!pv&&JSON.stringify({...nx,t:0})===JSON.stringify({...pv,t:0})}catch(e){}if(!same||!(S.t>0)||S.t>Date.now())S.t=Date.now();try{trackHist()}catch(e){}BEDS.list[BEDS.cur]=ser(S);saveBeds()}
 function isEmptyPt(s){return !s.nom&&!s.pumps.length&&!s.cond.length&&!s.meds.length&&!s.cad&&!(s.evo&&s.evo.log&&s.evo.log.length)&&!NUMK.some(k=>isFinite(s[k]))}
 const bedSort=(a,b)=>(parseFloat(a)||1e9)-(parseFloat(b)||1e9)||a.localeCompare(b);
 function bedIds(){return [...new Set([...Object.keys(BEDS.list),BEDS.cur])].sort(bedSort)}
 function switchBed(id){id=String(id).trim();if(!id||!BEDID.test(id))return;
   if(id!==BEDS.cur){if(isEmptyPt(S))delete BEDS.list[BEDS.cur];else BEDS.list[BEDS.cur]=ser(S);BEDS.cur=id;useBed(BEDS.list[id]);saveBeds()}
-  rerenderAll()}
+  rerenderAll();if(id!==undefined)staleCheck()}
 function addBed(id){const ids=bedIds();if(id==null||String(id).trim()===''){let n=1;while(ids.includes(String(n)))n++;id=n}switchBed(id);return String(id)}
 function rerenderAll(){closeSheet();const st=$('.stale');if(st)st.remove();
   $('#newBox').innerHTML='<button type="button" class="ghost" id="newBtn">Nuevo paciente</button>';
   syncInputs();renderPt();renderSits();renderPumps();refreshAll();renderEvoLink();renderBeds()}
 function renderBeds(){const box=$('#beds');if(!box)return;const ids=bedIds();
   box.innerHTML=`<span class="bl">Cama</span>${ids.map(id=>{const r=id===BEDS.cur?S:BEDS.list[id],n=r&&r.pumps?r.pumps.length:0;
-    const nm=r&&typeof r.nom==='string'?r.nom:'';return `<button type="button" data-bed="${esc(id)}" aria-pressed="${id===BEDS.cur}" aria-label="Cama ${esc(id)}${nm?' '+esc(nm):''}${n?`, ${n} bomba${n>1?'s':''}`:''}"><b>${esc(id)}</b>${nm?`<small data-bnm="${esc(id)}">${esc(nm.slice(0,10))}</small>`:''}${n?`<i aria-hidden="true">${'•'.repeat(Math.min(n,6))}</i>`:''}</button>`}).join('')}
+    const nm=r&&typeof r.nom==='string'?r.nom:'',old=n&&r.t>0&&(Date.now()-r.t)/3.6e6>2;return `<button type="button"${old?` class="old" title="Datos de hace ${fmt((Date.now()-r.t)/3.6e6,0)} h"`:''} data-bed="${esc(id)}" aria-pressed="${id===BEDS.cur}" aria-label="Cama ${esc(id)}${nm?' '+esc(nm):''}${n?`, ${n} bomba${n>1?'s':''}`:''}${old?`, datos de hace ${fmt((Date.now()-r.t)/3.6e6,0)} h`:''}"><b>${esc(id)}</b>${nm?`<small data-bnm="${esc(id)}">${esc(nm.slice(0,10))}</small>`:''}${n?`<i aria-hidden="true">${'•'.repeat(Math.min(n,6))}</i>`:''}</button>`}).join('')}
     <span id="bedNew"><button type="button" class="bplus" id="bedAdd" aria-label="Agregar cama">+</button></span><input class="bednm" id="bedNm" maxlength="40" autocomplete="off" placeholder="Nombre (opcional)" aria-label="Nombre del paciente de esta cama" value="${esc(S.nom||'')}">`;
   const ni=$('#bedNm');ni.oninput=()=>{S.nom=ni.value.replace(/[<>&"'`\\]/g,'').slice(0,40);save();const b=box.querySelector(`[data-bed="${CSS.escape(BEDS.cur)}"]`);if(b){let sm=b.querySelector('small');if(S.nom){if(!sm){sm=document.createElement('small');b.querySelector('b').after(sm)}sm.textContent=S.nom.slice(0,10)}else if(sm)sm.remove()}renderBar()}}
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2355,10 +2356,12 @@ function later(){if(rafId)return;rafId=requestAnimationFrame(()=>{rafId=0;refres
 function refreshAll(skipUid,skip){S.pumps.forEach(p=>refreshPump(p,p.uid===skipUid?skip:null));renderSummary();renderAlerts();renderIx();
   if(openUid!=null&&skip==null&&!$('#sheet').hidden&&!sheetBusy())renderSheet()}
 function sheetBusy(){const a=document.activeElement;return a&&$('#sheet').contains(a)&&a.tagName==='INPUT'}
-let restT=0;
+let restT=0;const DOSE0={};
+function mark0(p){if(DOSE0[p.uid]==null)DOSE0[p.uid]=p.dose}
+function softCheck(){S.pumps.forEach(p=>{const d0=DOSE0[p.uid];if(d0==null)return;delete DOSE0[p.uid];const d=byId(p.id);if(d0>0&&p.dose>=3*d0-1e-9&&!d.pure){const x=p.dose/d0;toast(`${d.name}: de ${fmt(d0,d0<1?3:1)} a ${fmt(p.dose,p.dose<1?3:1)} ${d.unit} (×${fmt(x,x<10?1:0)}). ¿Es lo que querías?`,()=>{p.dose=d0;p.nw=0;save();renderPumps();refreshAll()},8000)}})}
 $('#pumps').addEventListener('input',e=>{const role=e.target.dataset.role;if(!role)return;const uid=+e.target.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);
-  if(role==='rate')fitRate(e.target);const v=num(e.target.value);if(!(v>=0&&v<=1e5))return;ackPump(p);if(role==='dose')p.dose=v;else p.dose=doseFrom(p,v);p.nw=0;
-  refreshPump(p,role);clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts()},250)});
+  if(role==='rate')fitRate(e.target);const v=num(e.target.value);if(!(v>=0&&v<=1e5))return;ackPump(p);mark0(p);if(role==='dose')p.dose=v;else p.dose=doseFrom(p,v);p.nw=0;
+  refreshPump(p,role);clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts();softCheck()},700)});
 $('#pumps').addEventListener('focusout',e=>{if(e.target.dataset&&e.target.dataset.role){save();refreshAll()}});
 $('#pumps').addEventListener('click',e=>{
   const tx=e.target.closest('[data-tit-x]');if(tx){const p=S.pumps.find(x=>x.uid===+tx.dataset.titX);if(p){p.nw=0;save();refreshPump(p)}return}
@@ -2369,8 +2372,8 @@ $('#pumps').addEventListener('click',e=>{
 function nextDose(p,dir){const L=byId(p.id).lad,x=p.dose;
   if(dir>0){const v=L.find(v=>v>x+1e-9);if(v!=null)return v;const inc=L[L.length-1]-L[L.length-2];return +(x+inc).toFixed(4)}
   for(let i=L.length-1;i>=0;i--)if(L[i]<x-1e-9)return L[i];return L[0]}
-function stepPump(btn){const uid=+btn.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);ackPump(p);p.dose=nextDose(p,+btn.dataset.step);p.nw=0;refreshPump(p);
-  clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts()},200)}
+function stepPump(btn){const uid=+btn.closest('.pump').dataset.uid,p=S.pumps.find(x=>x.uid===uid);ackPump(p);mark0(p);p.dose=nextDose(p,+btn.dataset.step);p.nw=0;refreshPump(p);
+  clearTimeout(restT);restT=setTimeout(()=>{save();renderSummary();renderAlerts();softCheck()},400)}
 let holdT=null;
 function stopHold(){clearTimeout(holdT);holdT=null;document.querySelectorAll('.held').forEach(b=>b.classList.remove('held'))}
 let press=null;
@@ -2444,8 +2447,9 @@ function howHTML(p,d){if(needsW(p))return '<div class="blk"><p class="hint">Carg
 
 // Tope de tiempo dentro del rango (solo drogas con tope) y bolo plegado al final del detalle
 // Insumos: cuánto dura el sachet, cuántos se gastan por día y para cuánto alcanzan las ampollas que quedan. Más el goteo si no hay bomba.
-function supplyLine(p){const d=byId(p.id),hl=hoursLeft(p),r=rate(p,p.dose);if(!isFinite(hl)||!(r>0))return '';const sd=24/hl,amp=sd*p.n,uw=d.amp.vial?'frascos':'ampollas',st=p.stk>0?p.stk:NaN,al=st/p.n*hl,g=r/3;
-  return `<div class="sup"><div>El sachet dura <b>${durLbl(hl)}</b> · en 24 h: <b>${fmt(sd,1)} sachets = ${fmt(Math.ceil(amp-1e-9),0)} ${uw}</b></div>
+function chgH(p){return p.id==='propo'?6:p.id==='atra'&&dilOf(p)==='Dx5%'?8:24}
+function supplyLine(p){const d=byId(p.id),hl0=hoursLeft(p),r=rate(p,p.dose);if(!isFinite(hl0)||!(r>0))return '';const cg=chgH(p),hl=Math.min(hl0,cg),sd=24/hl,amp=sd*p.n,uw=d.amp.vial?'frascos':'ampollas',st=p.stk>0?p.stk:NaN,al=st/p.n*hl,g=r/3;
+  return `<div class="sup"><div>El sachet dura <b>${durLbl(hl0)}</b>${hl0>cg?` · se cambia cada <b>${cg} h</b>`:''} · en 24 h: <b>${fmt(sd,1)} sachets = ${fmt(Math.ceil(amp-1e-9),0)} ${uw}</b></div>
    <div class="rconv">Quedan <input class="t0i" id="stkIn" inputmode="numeric" value="${isFinite(st)?st:''}" aria-label="${uw} que quedan"> ${uw} en el servicio${isFinite(al)?` → alcanzan para <b>${durLbl(al)}</b>${al<24?' <span class="s-bad">· no llega a 24 h</span>':''}`:''}</div>
    <div class="gt">Sin bomba: <b>${fmt(g,g<10?1:0)} gotas/min</b> con macrogotero (1 cada ${fmt(60/g,1)} s) · <b>${fmt(r,r<10?1:0)} microgotas/min</b> con microgotero</div></div>`}
 function timeLine(p){const T=tStat(p);if(!T)return '';const h=hrsOn(p);
@@ -2515,7 +2519,7 @@ function bindSheet(p,d){const pd2=document.querySelector('#sheet details.prep');
   $('#nMinus').onclick=()=>{const v=Number.isInteger(p.n)?p.n-1:Math.floor(p.n);if(v>=1){p.n=v;upd()}};
   $('#nPlus').onclick=()=>{const v=Number.isInteger(p.n)?p.n+1:Math.ceil(p.n);if(v<=30){p.n=v;upd()}};
   const as=$('#addSeg');if(as)as.onclick=e=>{const b=e.target.closest('button');if(!b)return;p.add=b.dataset.v==='1';S.addDef=p.add;upd()};
-  const vi=$('#volIn');vi.onchange=()=>{const v=num(vi.value);if(!(v>0&&v<=2000)){vi.value=inFmt(p.vol,1);return}if(d.pure){p.n=Math.round(v/p.ml*100)/100;p.vol=v;save();renderPumps()}else{p.vol=v;upd()}};
+  const vi=$('#volIn');vi.onchange=()=>{const v=num(vi.value);if(!(v>0&&v<=2000)){vi.value=inFmt(p.vol,1);return}if(![20,30,50,100,125,150,200,250,500,1000].includes(v)){const old=p.vol;toast(`Volumen ${fmt(v,0)} ml: no es una bolsa habitual. ¿Seguro?`,()=>{p.vol=old;if(d.pure)p.n=Math.round(old/p.ml*100)/100;save();renderPumps()},8000)}if(d.pure){p.n=Math.round(v/p.ml*100)/100;p.vol=v;save();renderPumps()}else{p.vol=v;upd()}};
   document.querySelectorAll('#sheet [data-vol]').forEach(b=>b.onclick=()=>{p.vol=+b.dataset.vol;upd()});
   const ds=$('#dilSeg');if(ds)ds.onclick=e=>{const b=e.target.closest('button');if(!b)return;p.dil=b.dataset.v;upd()};
   const ps=$('#prepSeg');if(ps)ps.onclick=e=>{const b=e.target.closest('button');if(!b)return;const s=b.dataset.v==='alt'?d.alt:stdOf(d);p.n=s.n;p.vol=s.vol;upd()};
@@ -2898,7 +2902,7 @@ $('#beds').addEventListener('click',e=>{const b=e.target.closest('[data-bed]');i
     i.onblur=()=>setTimeout(()=>{if(document.activeElement!==$('#bedOk')&&$('#bedIn')&&!$('#bedIn').value.trim())renderBeds()},150)}});
 function staleCheck(){if($('.stale:not(#hbanner)'))return;const age=(Date.now()-S.t)/3.6e6;if(S.pumps.length&&age>2){const n=document.createElement('div');n.className='stale';
   n.innerHTML=`<span>Datos de hace ${fmt(age,0)} h. ¿Es el mismo paciente?</span><button type="button" class="ghost" id="stOk">Sí</button><button type="button" class="ghost danger" id="stNew">Nuevo</button>`;
-  $('.top').after(n);$('#stOk').onclick=()=>{n.remove();save()};$('#stNew').onclick=()=>{n.remove();S=fresh();save();syncInputs();renderPt();renderSits();renderPumps()}}}
+  $('.top').after(n);$('#stOk').onclick=()=>{n.remove();S.t=Date.now();save()};$('#stNew').onclick=()=>{n.remove();S=fresh();save();syncInputs();renderPt();renderSits();renderPumps()}}}
 staleCheck();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;
   const now=Date.now();let ch=false;Object.keys(BEDS.list).forEach(id=>{if(id!==BEDS.cur&&!(now-BEDS.list[id].t<TTL)){delete BEDS.list[id];ch=true}});if(ch){saveBeds();renderBeds()}
@@ -2970,7 +2974,7 @@ $('#sheet').addEventListener('click',e=>{if(e.target.closest('[data-cad]'))openC
     document.body.appendChild(t);t.querySelector('button').onclick=()=>{t.remove();undo()};toastT=setTimeout(()=>t.remove(),ms||5000)}
   function remove(uid){lsSet('gamasUCO.sw','1');const i=S.pumps.findIndex(p=>p.uid===uid);if(i<0)return;const p=S.pumps[i];const swap=OFF[p.id]&&trnPair().some(x=>x.a===p.id||x.any);S.pumps.splice(i,1);save();renderPumps();
     toast(`${byId(p.id).name} quitada${swap?'. '+OFF[p.id]:''}`,()=>{S.pumps.splice(Math.min(i,S.pumps.length),0,p);save();renderPumps()},swap?9000:0)}
-  window.removePump=remove;const box=$('#pumps');
+  window.removePump=remove;window.toast=toast;const box=$('#pumps');
   box.addEventListener('pointerdown',e=>{const el=e.target.closest('.pump');if(!el||e.target.closest('input:not([readonly]),.stp button')||e.button>0)return;
     st={el,x:e.clientX,y:e.clientY,dx:0,on:false,id:e.pointerId}});
   box.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;
